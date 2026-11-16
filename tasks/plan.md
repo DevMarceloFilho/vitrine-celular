@@ -59,7 +59,7 @@ A ordem segue o risco: primeiro o esqueleto com o texto das cenas, depois o palc
 
 ### Fase 3: Publicação
 
-- [ ] V9: Repositório no GitHub, deploy no Pages e README com GIF
+- [x] V9: Repositório no GitHub, deploy no Pages e README com GIF
 - [ ] V10: Estudo de caso no portfólio (entra junto da T5 do portfólio)
 
 ### Checkpoint: Pronto

@@ -171,8 +171,8 @@ As poses de "Design" e "Câmera" passam a mostrar esses detalhes.
 **Descrição:** Cria o repositório `vitrine-celular` no GitHub (com a sua autorização na hora) e o workflow `withastro/action` + `deploy-pages`. Escreve o README com GIF, stack, decisões e aviso de produto fictício.
 
 **Aceite:**
-- [ ] Um push na `main` publica o site em `<usuario>.github.io/vitrine-celular/`, com PT e EN abrindo
-- [ ] O README mostra o GIF e os comandos
+- [x] Um push na `main` publica o site em `devmarcelofilho.github.io/vitrine-celular/`, com PT e EN abrindo
+- [x] O README mostra o GIF e os comandos
 
 **Dependências:** V8 · **Tamanho:** S
 
