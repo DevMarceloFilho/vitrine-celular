@@ -33,15 +33,30 @@ declare global {
   }
 }
 
-/** Ponto de entrada do 3D, carregado por import dinâmico depois do load. */
-export function mountPhoneStage(canvas: HTMLCanvasElement): PhoneStage {
+const nextFrame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+/**
+ * Ponto de entrada do 3D, carregado por import dinâmico depois do load. A montagem cede um frame
+ * entre as etapas pesadas e compila os shaders em paralelo, para não travar a página de uma vez.
+ */
+export async function mountPhoneStage(canvas: HTMLCanvasElement): Promise<PhoneStage> {
+  // Marcas de performance por etapa (visíveis no painel Performance do DevTools e no `npm run measure`).
+  performance.mark("orbe:start");
   const stage = createStage(canvas);
+  performance.mark("orbe:renderer");
+  await nextFrame();
+  stage.buildLighting();
+  performance.mark("orbe:lighting");
+  await nextFrame();
   const phone = createPhone();
 
   // O "rig" recebe pose e enquadramento; o aparelho guarda só a própria escala.
   const rig = new Group();
   rig.add(phone.group);
   stage.scene.add(rig);
+  performance.mark("orbe:model");
+  await stage.compile();
+  performance.mark("orbe:compiled");
 
   // Modo pôster (?poster): sem scroll; o script pede cada cena e lê o canvas como PNG transparente.
   if (new URLSearchParams(location.search).has("poster")) {
@@ -125,5 +140,6 @@ export function mountPhoneStage(canvas: HTMLCanvasElement): PhoneStage {
 
   window.__orbe = { dispose: () => stage.dispose() };
   document.documentElement.dataset.stage = "ready";
+  performance.mark("orbe:ready");
   return { stage, phone };
 }

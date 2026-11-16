@@ -1,4 +1,5 @@
 ---
+import type { ImageMetadata } from "astro";
 import { Font } from "astro:assets";
 import LangSwitch from "../components/LangSwitch.astro";
 import {
@@ -28,6 +29,14 @@ const alternates = (Object.keys(languages) as Lang[]).map((l) => ({
   hreflang: htmlLang[l],
   href: new URL(switchLangPath(Astro.url.pathname, l, baseUrl), siteRoot).href,
 }));
+
+// Open Graph: imagem de compartilhamento = pôster da abertura (se já foi gerado).
+const ogLocale: Record<Lang, string> = { pt: "pt_BR", en: "en_US" };
+const canonical = new URL(Astro.url.pathname, siteRoot).href;
+const introPoster = Object.values(
+  import.meta.glob<{ default: ImageMetadata }>("../assets/posters/intro.png", { eager: true }),
+)[0]?.default;
+const ogImage = introPoster ? new URL(introPoster.src, siteRoot).href : undefined;
 ---
 
 <!doctype html>
@@ -37,6 +46,14 @@ const alternates = (Object.keys(languages) as Lang[]).map((l) => ({
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="theme-color" content="#060607" />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={ogLocale[lang]} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
     <link rel="icon" type="image/svg+xml" href={`${assetBase}/favicon.svg`} />
     {alternates.map((a) => <link rel="alternate" hreflang={a.hreflang} href={a.href} />)}
     <Font cssVariable="--font-sans" preload />

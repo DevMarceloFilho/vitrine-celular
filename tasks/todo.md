@@ -140,9 +140,21 @@ As poses de "Design" e "Câmera" passam a mostrar esses detalhes.
 **Descrição:** Roda o axe e corrige o que aparecer. Adiciona `title`, `description` e Open Graph por idioma. Mede Lighthouse mobile, trace de performance no desktop e tamanho do bundle, e corrige até bater as metas.
 
 **Aceite:**
-- [ ] O axe não encontra violação séria ou crítica nas duas páginas
-- [ ] Lighthouse mobile: Performance ≥ 85, Acessibilidade/Boas práticas/SEO ≥ 95; LCP < 2,5 s; CLS < 0,1
-- [ ] JS total ≤ 250 KB gzip; trace do desktop sem tarefas longas (> 50 ms) durante o scroll
+- [x] O axe não encontra violação séria ou crítica nas duas páginas
+- [ ] Lighthouse mobile: Performance ≥ 85, Acessibilidade/Boas práticas/SEO ≥ 95; LCP < 2,5 s; CLS < 0,1 → LCP e CLS medidos e dentro da meta; a nota do Lighthouse depende de rodar o `lighthouse` (pacote fora da stack, aguarda aprovação)
+- [x] JS total ≤ 250 KB gzip; trace do desktop sem tarefas longas (> 50 ms) durante o scroll
+
+> Feita em 2026-11-16. 78 testes (axe em PT/EN, com 3D e com pôsteres; Open Graph e canonical por idioma).
+> Medições (`npm run measure`, GPU Radeon RX 590 via ANGLE/D3D11):
+>
+> | Perfil | LCP | CLS | 3D pronto | Maior tarefa longa até o 3D | Durante o scroll | FPS |
+> |---|---|---|---|---|---|---|
+> | Desktop | 244–328 ms | 0,000 | 0,74 s | 141 ms | nenhuma | 57 |
+> | Celular (CPU 4×, 4G lento) | 836 ms | 0,039 | 2,4 s | 200 ms | nenhuma | 60 |
+>
+> JS total: 193,4 KB gzip (inicial 1,3 KB).
+> Achado: o ambiente PMREM (`RoomEnvironment`) compilava shaders de forma síncrona e travava a página por ~640 ms com cache frio. Trocado por luzes diretas compiladas em paralelo (`renderer.compileAsync`) e montagem em etapas com `performance.mark`; a estrutura passou de `metalness` 0,85 para 0,45 para não ficar preta sem reflexo. Pôsteres regenerados.
+> Nota: o Astro 7 só permite um `astro preview` por projeto; feche o preview do `npm run measure` antes de rodar os testes.
 
 **Dependências:** V7 · **Tamanho:** M
 

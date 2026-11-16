@@ -1,15 +1,15 @@
 import {
   ACESFilmicToneMapping,
+  DirectionalLight,
+  HemisphereLight,
   type Material,
   Mesh,
   PerspectiveCamera,
-  PMREMGenerator,
   Scene,
   SRGBColorSpace,
   Texture,
   WebGLRenderer,
 } from "three";
-import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
 export interface Stage {
   scene: Scene;
@@ -20,6 +20,13 @@ export interface Stage {
   onRender(callback: () => void): void;
   /** Render síncrono (usado para capturar os pôsteres). */
   renderNow(): void;
+  /**
+   * Luzes da cena. Luzes diretas em vez de ambiente PMREM: o PMREM compilava shaders de forma
+   * síncrona e travava a página por ~600 ms; estas compilam em paralelo com o resto no `compile()`.
+   */
+  buildLighting(): void;
+  /** Compila os shaders da cena em paralelo, sem travar a página (KHR_parallel_shader_compile). */
+  compile(): Promise<void>;
   /** Libera tudo e devolve o que ainda restou na GPU (deve ser zero). */
   dispose(): { geometries: number; textures: number };
 }
@@ -33,13 +40,18 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
   renderer.toneMapping = ACESFilmicToneMapping;
 
   const scene = new Scene();
-  const pmrem = new PMREMGenerator(renderer);
-  const room = new RoomEnvironment();
-  // O ambiente é um render target: precisa ser liberado inteiro, não só a textura.
-  const envTarget = pmrem.fromScene(room, 0.04);
-  scene.environment = envTarget.texture;
-  room.dispose();
-  pmrem.dispose();
+  let lit = false;
+  const buildLighting = () => {
+    if (lit) return;
+    lit = true;
+    const key = new DirectionalLight("#ffffff", 3.2);
+    key.position.set(3, 4, 6);
+    const rim = new DirectionalLight("#9b8cff", 3); // contraluz violeta da marca
+    rim.position.set(-5, 3, -4);
+    const fill = new DirectionalLight("#ffffff", 1.2);
+    fill.position.set(-4, -2, 5);
+    scene.add(new HemisphereLight("#e6e4ff", "#2a2a33", 2.2), key, rim, fill);
+  };
 
   const camera = new PerspectiveCamera(30, 1, 0.1, 100);
   camera.position.set(0, 0, 9);
@@ -79,6 +91,10 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
       cancelAnimationFrame(frame);
       render();
     },
+    buildLighting,
+    compile: async () => {
+      await renderer.compileAsync(scene, camera);
+    },
     dispose() {
       cancelAnimationFrame(frame);
       observer.disconnect();
@@ -95,7 +111,6 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
           material.dispose();
         }
       });
-      envTarget.dispose();
       renderer.dispose();
       const { geometries, textures } = renderer.info.memory;
       return { geometries, textures };

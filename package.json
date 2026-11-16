@@ -9,7 +9,8 @@
     "preview": "astro preview",
     "check": "astro check",
     "test": "playwright test",
-    "posters": "node scripts/posters.mjs"
+    "posters": "node scripts/posters.mjs",
+    "measure": "node scripts/measure.mjs"
   },
   "dependencies": {
     "astro": "^7.4.12",

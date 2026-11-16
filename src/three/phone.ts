@@ -89,7 +89,7 @@ export function createPhone(): Phone {
 
   const frameMaterial = new MeshPhysicalMaterial({
     color: new Color("#3a3b40"),
-    metalness: 0.85,
+    metalness: 0.45, // sem reflexo de ambiente, metal alto ficaria preto: parte da cor vem da luz difusa
     roughness: 0.32,
     clearcoat: 0.6,
     clearcoatRoughness: 0.35,

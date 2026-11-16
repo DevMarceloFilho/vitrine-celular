@@ -38,7 +38,7 @@ async function start(): Promise<void> {
   if (!canvas) return;
 
   const { mountPhoneStage } = await import("../three/mount");
-  mountPhoneStage(canvas);
+  await mountPhoneStage(canvas);
 }
 
 if (document.readyState === "complete") void start();
