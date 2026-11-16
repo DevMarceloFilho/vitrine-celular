@@ -14,7 +14,8 @@ export const keyframes: Record<SceneId, Pose> = {
   intro: { rotationX: 0.12, rotationY: -0.45, positionY: 0, cameraZ: 9, explode: 0 },
   design: { rotationX: 0.05, rotationY: Math.PI - 0.3, positionY: 0, cameraZ: 8.5, explode: 0 },
   camera: { rotationX: -0.1, rotationY: Math.PI + 0.25, positionY: -1, cameraZ: 5, explode: 0 },
-  inside: { rotationX: 0.35, rotationY: Math.PI * 2 - 0.6, positionY: 0, cameraZ: 9.5, explode: 1 },
+  // Quase de lado: o afastamento das camadas em Z vira um leque na horizontal.
+  inside: { rotationX: 0.3, rotationY: Math.PI * 2 - 1.15, positionY: 0, cameraZ: 10.5, explode: 1 },
   colors: { rotationX: 0.1, rotationY: Math.PI * 2 - 0.35, positionY: 0, cameraZ: 8.5, explode: 0 },
   specs: { rotationX: 0, rotationY: Math.PI * 1.5 + 0.15, positionY: 0, cameraZ: 9, explode: 0 },
   end: { rotationX: 0.12, rotationY: Math.PI * 2 - 0.45, positionY: 0, cameraZ: 11, explode: 0 },
@@ -24,7 +25,8 @@ const ordered = sceneIds.map((id) => keyframes[id]);
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 const smoothstep = (t: number) => t * t * (3 - 2 * t);
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+// Forma exata nas pontas: t = 0 devolve `a` e t = 1 devolve `b` sem erro de arredondamento.
+const lerp = (a: number, b: number, t: number) => a * (1 - t) + b * t;
 
 /**
  * Posição de scroll em que cada seção fica centralizada na tela, limitada a [0, maxScroll].

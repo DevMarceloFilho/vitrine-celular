@@ -5,6 +5,7 @@ import type { SceneId } from "../i18n/ui";
 import { initSmoothScroll } from "../scripts/smooth-scroll";
 import { bindScroll } from "../scripts/timeline";
 import { idleSway, keyframes, type Pose } from "./choreography";
+import { createLabels } from "./labels";
 import { createPhone, type Phone } from "./phone";
 import { createStage, type Stage } from "./stage";
 
@@ -39,6 +40,10 @@ export function mountPhoneStage(canvas: HTMLCanvasElement): PhoneStage {
   rig.add(phone.group);
   stage.scene.add(rig);
 
+  const labelsRoot = document.querySelector<HTMLElement>("[data-labels]");
+  const labels = labelsRoot ? createLabels(labelsRoot, phone.anchors, stage.camera, canvas) : null;
+  if (labels) stage.onRender(labels.update);
+
   let layout = DESKTOP;
   let pose: Pose = keyframes.intro;
   let scene: SceneId = "intro";
@@ -48,6 +53,9 @@ export function mountPhoneStage(canvas: HTMLCanvasElement): PhoneStage {
     rig.rotation.set(pose.rotationX, pose.rotationY + sway, 0);
     rig.position.set(layout.x, layout.y + pose.positionY * layout.scale, 0);
     rig.scale.setScalar(layout.scale);
+    phone.setExplode(pose.explode);
+    // Os rótulos só aparecem perto da explosão completa (a partir de 60%).
+    labels?.setVisibility(Math.min(Math.max((pose.explode - 0.6) / 0.3, 0), 1));
     stage.camera.position.z = pose.cameraZ;
     stage.requestRender();
   };

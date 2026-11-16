@@ -27,6 +27,10 @@ export type SceneId = (typeof sceneIds)[number];
 export const colorIds = ["graphite", "sand", "mist"] as const;
 export type ColorId = (typeof colorIds)[number];
 
+/** Camadas da vista explodida, de frente para trás. */
+export const layerIds = ["screen", "frame", "battery", "board"] as const;
+export type LayerId = (typeof layerIds)[number];
+
 interface SceneCopy {
   eyebrow: string;
   title: string;
@@ -37,6 +41,8 @@ interface Copy {
   meta: { title: string; description: string };
   scenes: Record<SceneId, SceneCopy>;
   layers: string[];
+  /** Rótulos curtos que flutuam sobre cada camada no 3D. */
+  labels: Record<LayerId, string>;
   colors: Record<ColorId, string>;
   specs: { caption: string; rows: [string, string][] };
 }
@@ -74,6 +80,7 @@ export const copy: Record<Lang, Copy> = {
       },
     },
     layers: ["Tela OLED de 6,3\" a 120 Hz", "Estrutura em alumínio", "Bateria de 4.800 mAh", "Placa com o chip Núcleo N1"],
+    labels: { screen: "Tela", frame: "Estrutura", battery: "Bateria", board: "Placa" },
     colors: { graphite: "Grafite", sand: "Areia", mist: "Névoa" },
     specs: {
       caption: "Especificações do Orbe One (fictícias)",
@@ -119,6 +126,7 @@ export const copy: Record<Lang, Copy> = {
       },
     },
     layers: ["6.3\" 120 Hz OLED display", "Aluminum frame", "4,800 mAh battery", "Logic board with the Núcleo N1 chip"],
+    labels: { screen: "Display", frame: "Frame", battery: "Battery", board: "Board" },
     colors: { graphite: "Graphite", sand: "Sand", mist: "Mist" },
     specs: {
       caption: "Orbe One specifications (fictional)",

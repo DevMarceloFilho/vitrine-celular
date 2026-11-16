@@ -9,9 +9,11 @@ import {
   Mesh,
   MeshBasicMaterial,
   MeshPhysicalMaterial,
+  Object3D,
   Shape,
   ShapeGeometry,
 } from "three";
+import { layerIds, type LayerId } from "../i18n/ui";
 import { createScreenTexture } from "./screen-texture";
 
 // Medidas em decímetros (1 unidade = 100 mm): 71 × 149 × 7,9 mm.
@@ -66,11 +68,19 @@ export interface Colorway {
 
 export interface Phone {
   group: Group;
-  /** Camadas que a vista explodida (V5) separa. */
-  layers: { screen: Group; frame: Group };
+  /** Camadas da vista explodida, cada uma com um ponto de ancoragem para o rótulo. */
+  layers: Record<LayerId, Group>;
+  anchors: Record<LayerId, Object3D>;
+  /** 0 = aparelho fechado; 1 = camadas afastadas em Z. */
+  setExplode(amount: number): void;
   setColorway(colorway: Colorway): void;
   materials: { frame: MeshPhysicalMaterial; back: MeshPhysicalMaterial };
 }
+
+/** Afastamento de cada camada com a explosão completa (em Z, de frente para trás). */
+const EXPLODE_Z: Record<LayerId, number> = { screen: 0.4, frame: 0, battery: -0.4, board: -0.8 };
+/** Média dos afastamentos: compensa para o conjunto continuar centralizado. */
+const EXPLODE_CENTER = Object.values(EXPLODE_Z).reduce((sum, z) => sum + z, 0) / layerIds.length;
 
 export function createPhone(): Phone {
   const group = new Group();
@@ -158,7 +168,6 @@ export function createPhone(): Phone {
     button.position.set(x, y, 0);
     frame.add(button);
   }
-  group.add(frame);
 
   // Tela: interface fictícia e câmera frontal.
   const screenLayer = new Group();
@@ -173,11 +182,65 @@ export function createPhone(): Phone {
   const frontCamera = new Mesh(new CircleGeometry(0.018, 32), new MeshBasicMaterial({ color: new Color("#020203") }));
   frontCamera.position.set(0, HEIGHT / 2 - 0.065, DEPTH / 2 + 0.001);
   screenLayer.add(frontCamera);
-  group.add(screenLayer);
+
+  // Bateria e placa: escondidas dentro do corpo com o aparelho fechado.
+  const battery = new Group();
+  battery.add(
+    new Mesh(
+      new BoxGeometry(0.5, 0.78, 0.03),
+      new MeshPhysicalMaterial({ color: new Color("#2a2540"), metalness: 0.3, roughness: 0.6 }),
+    ),
+  );
+  battery.position.set(0, -0.12, -0.008);
+
+  const board = new Group();
+  const chipMaterial = new MeshPhysicalMaterial({ color: new Color("#1a1a1f"), metalness: 0.7, roughness: 0.3 });
+  board.add(
+    new Mesh(
+      new BoxGeometry(0.6, 1.3, 0.012),
+      new MeshPhysicalMaterial({ color: new Color("#123630"), metalness: 0.2, roughness: 0.5 }),
+    ),
+  );
+  for (const [x, y, size] of [
+    [0, 0.42, 0.16],
+    [-0.14, 0.18, 0.08],
+    [0.14, 0.2, 0.1],
+  ] as const) {
+    const chip = new Mesh(new BoxGeometry(size, size, 0.012), chipMaterial);
+    chip.position.set(x, y, 0.012);
+    board.add(chip);
+  }
+  board.position.set(0, 0, -0.026);
+
+  const layers: Record<LayerId, Group> = { screen: screenLayer, frame, battery, board };
+  const restZ: Record<LayerId, number> = {
+    screen: screenLayer.position.z,
+    frame: frame.position.z,
+    battery: battery.position.z,
+    board: board.position.z,
+  };
+
+  // Rótulos alternam entre o topo e a base das camadas, para não se encostarem.
+  const anchors = {} as Record<LayerId, Object3D>;
+  layerIds.forEach((id, i) => {
+    const anchor = new Object3D();
+    anchor.position.set(0, i % 2 === 0 ? HEIGHT / 2 + 0.08 : -HEIGHT / 2 - 0.08, 0);
+    layers[id].add(anchor);
+    anchors[id] = anchor;
+  });
+
+  const stack = new Group();
+  for (const id of layerIds) stack.add(layers[id]);
+  group.add(stack);
 
   return {
     group,
-    layers: { screen: screenLayer, frame },
+    layers,
+    anchors,
+    setExplode(amount) {
+      for (const id of layerIds) layers[id].position.z = restZ[id] + EXPLODE_Z[id] * amount;
+      stack.position.z = -EXPLODE_CENTER * amount;
+    },
     materials: { frame: frameMaterial, back: backMaterial },
     setColorway({ frame: frameColor, back: backColor }) {
       frameMaterial.color.set(frameColor);

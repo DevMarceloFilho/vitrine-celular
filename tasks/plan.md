@@ -43,7 +43,7 @@ A ordem segue o risco: primeiro o esqueleto com o texto das cenas, depois o palc
 ### Fase 2: Cenas
 
 - [x] V4: Modelo completo (traseira, lentes, botões, materiais, tela)
-- [ ] V5: Vista explodida com rótulos
+- [x] V5: Vista explodida com rótulos
 - [ ] V6: Seletor de cores
 
 ### Checkpoint: Cenas

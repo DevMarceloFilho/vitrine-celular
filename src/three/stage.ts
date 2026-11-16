@@ -16,6 +16,8 @@ export interface Stage {
   camera: PerspectiveCamera;
   /** Agenda um único render no próximo frame (render sob demanda, sem loop contínuo). */
   requestRender(): void;
+  /** Chamado logo depois de cada render, no mesmo frame (ex.: posicionar rótulos HTML). */
+  onRender(callback: () => void): void;
   /** Libera tudo e devolve o que ainda restou na GPU (deve ser zero). */
   dispose(): { geometries: number; textures: number };
 }
@@ -41,9 +43,11 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
   camera.position.set(0, 0, 9);
 
   let frame = 0;
+  const afterRender: (() => void)[] = [];
   const render = () => {
     frame = 0;
     renderer.render(scene, camera);
+    for (const callback of afterRender) callback();
   };
   const requestRender = () => {
     if (!frame) frame = requestAnimationFrame(render);
@@ -68,6 +72,7 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
     scene,
     camera,
     requestRender,
+    onRender: (callback) => afterRender.push(callback),
     dispose() {
       cancelAnimationFrame(frame);
       observer.disconnect();

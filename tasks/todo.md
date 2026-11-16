@@ -89,8 +89,11 @@ As poses de "Design" e "Câmera" passam a mostrar esses detalhes.
 **Descrição:** Separa o aparelho em 4 camadas (tela, estrutura, bateria, placa), que se afastam com `explode` de 0 a 1. Rótulos HTML acompanham cada camada, projetados de 3D para 2D no mesmo frame do render. As camadas também existem como lista no HTML.
 
 **Aceite:**
-- [ ] Na cena "Por dentro" com `explode` = 1, os 4 rótulos ficam visíveis e não se sobrepõem em 1440px e 375px
-- [ ] A lista de camadas é lida por leitor de tela, e os rótulos flutuantes ficam `aria-hidden`
+- [x] Na cena "Por dentro" com `explode` = 1, os 4 rótulos ficam visíveis e não se sobrepõem em 1440px e 375px
+- [x] A lista de camadas é lida por leitor de tela, e os rótulos flutuantes ficam `aria-hidden`
+
+> Feita em 2026-11-16. 50 testes. A cena "Por dentro" virou quase de lado (rotação Y de −1,15 rad) para o afastamento em Z abrir um leque; os rótulos alternam topo e base.
+> Achado: com o novo ângulo, `a + (b − a)·t` não devolvia `b` exato em t = 1; a interpolação agora usa `a·(1 − t) + b·t`, exata nas pontas.
 
 **Dependências:** V4 · **Tamanho:** M
 
