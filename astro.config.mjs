@@ -2,7 +2,8 @@
 import { defineConfig, fontProviders } from "astro/config";
 
 export default defineConfig({
-  // O site mora em <usuario>.github.io/vitrine-celular/
+  // O site mora em devmarcelofilho.github.io/vitrine-celular/
+  site: "https://devmarcelofilho.github.io",
   base: "/vitrine-celular",
   // CSS pequeno: embutido no HTML para não bloquear a primeira renderização.
   build: { inlineStylesheets: "always" },

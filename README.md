@@ -2,7 +2,7 @@
 
 Página de lançamento de um celular que não existe, contada pelo scroll: o aparelho, modelado em código com Three.js, gira, aproxima a câmera, se desmonta em camadas e troca de cor conforme você rola.
 
-**Demo:** https://<usuario>.github.io/vitrine-celular/ · Projeto de portfólio de Marcelo Filho.
+**Demo:** https://devmarcelofilho.github.io/vitrine-celular/ · Código: https://github.com/DevMarceloFilho/vitrine-celular · Projeto de portfólio de Marcelo Filho.
 
 ![Rolando a vitrine: o aparelho gira, mostra a câmera, se desmonta e muda de cor](docs/demo.gif)
 
