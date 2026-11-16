@@ -28,6 +28,13 @@ test.describe("com movimento liberado", () => {
     await expect(page.locator("canvas[data-stage]")).toBeVisible();
   });
 
+  test("o enquadramento acompanha a largura da tela", async ({ page }) => {
+    await page.goto("./");
+    const expected = page.viewportSize()!.width >= 1024 ? "desktop" : "mobile";
+
+    await expect(page.locator("html")).toHaveAttribute("data-layout", expected);
+  });
+
   test("nenhum JS grande é baixado antes do load", async ({ page }) => {
     await page.goto("./");
     await expect(page.locator("html")).toHaveAttribute("data-stage", "ready");

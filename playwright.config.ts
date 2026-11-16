@@ -8,6 +8,9 @@ export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
   reporter: "list",
+  // O WebGL dos testes roda em software (SwiftShader): compilar os shaders com vários
+  // testes em paralelo pode passar dos 5 s padrão. Num navegador com GPU leva bem menos.
+  expect: { timeout: 15_000 },
   use: { baseURL: BASE },
   webServer: {
     command: `npm run build && npm run preview -- --port ${PORT}`,

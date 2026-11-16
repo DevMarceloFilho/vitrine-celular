@@ -42,9 +42,14 @@ Verificação padrão de toda tarefa: `npm run build && npm run check && npx pla
 **Descrição:** Cria o `choreography.ts` com uma pose por cena e a interpolação entre elas, coberto por testes de unidade. Liga Lenis + ScrollTrigger (`scrub`) ao progresso de cada seção, aplica a pose no palco e escreve `data-scene` no `<body>`.
 
 **Aceite:**
-- [ ] Testes de unidade: progresso fora de 0–1 é limitado, e a pose no fim de uma cena é igual à do início da próxima (sem salto)
-- [ ] Rolar até "Por dentro" deixa `data-scene="inside"`, e voltar ao topo deixa `data-scene="intro"`
-- [ ] Nenhum ScrollTrigger com `markers`, e nenhum ScrollTrigger em tween filho de timeline
+- [x] Testes de unidade: progresso fora de 0–1 é limitado, e a pose no fim de uma cena é igual à do início da próxima (sem salto)
+- [x] Rolar até "Por dentro" deixa `data-scene="inside"`, e voltar ao topo deixa `data-scene="intro"`
+- [x] Nenhum ScrollTrigger com `markers`, e nenhum ScrollTrigger em tween filho de timeline
+
+> Feita em 2026-11-16. 41 testes, estáveis em 3 rodadas seguidas. JS total: 191,7 KB gzip (meta: 250).
+> Desvios: (1) em vez de um tween com `scrub`, um único ScrollTrigger chama `poseAt()` no `onUpdate`; a suavização vem do Lenis e a lógica fica pura e testável. (2) `expect.timeout` de 15 s no Playwright, porque o WebGL em software dos testes demora a compilar shaders com testes em paralelo.
+> Bug achado e corrigido: o `gsap.matchMedia()` com só a condição `desktop` nunca rodava no celular; agora há `desktop` e `mobile`, e o `data-layout` no `<html>` é testado.
+> Pendências para a V4: no celular o texto passa por cima do aparelho (degradê atrás do texto); a abertura ainda não gira sozinha.
 
 **Dependências:** V2 · **Tamanho:** M
 
