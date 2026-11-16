@@ -26,9 +26,12 @@ Verificação padrão de toda tarefa: `npm run build && npm run check && npx pla
 **Descrição:** Cria o `stage.ts` (renderer, câmera, `RoomEnvironment`, render sob demanda, resize, `dispose`) e um `phone.ts` provisório (corpo arredondado + tela). O `main.ts` importa o 3D dinamicamente depois do primeiro paint, só com WebGL disponível e movimento liberado.
 
 **Aceite:**
-- [ ] O canvas aparece atrás do texto e cria um contexto WebGL, sem erro no console
-- [ ] O chunk do Three.js não é baixado antes do evento `load`, e não é baixado com `reducedMotion: "reduce"`
-- [ ] Tamanho do JS medido e anotado aqui (inicial e total, em gzip)
+- [x] O canvas aparece atrás do texto e cria um contexto WebGL, sem erro no console
+- [x] O chunk do Three.js não é baixado antes do evento `load`, e não é baixado com `reducedMotion: "reduce"`
+- [x] Tamanho do JS medido e anotado aqui (inicial e total, em gzip)
+
+> Feita em 2026-11-16. JS inicial: 1,2 KB gzip. Chunk do 3D (`mount`): 140,7 KB gzip. Total: 141,7 KB; sobram ~108 KB para GSAP + ScrollTrigger + Lenis (~45 KB) e o resto do modelo.
+> Desvio: o corpo usa `ExtrudeGeometry` com chanfro em vez de `RoundedBoxGeometry`, que só aceita um raio para todas as arestas e deixava os cantos da tela quase retos.
 
 **Dependências:** V1 · **Tamanho:** M
 
