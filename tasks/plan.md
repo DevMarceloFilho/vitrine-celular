@@ -35,9 +35,9 @@ A ordem segue o risco: primeiro o esqueleto com o texto das cenas, depois o palc
 
 ### Checkpoint: Base
 
-- [ ] Build, check e testes passam
-- [ ] O aparelho (ainda simples) gira e se move com o scroll, em desktop e celular
-- [ ] Bundle medido: JS inicial sem Three.js; total dentro da meta ou com plano para caber
+- [x] Build, check e testes passam
+- [x] O aparelho (ainda simples) gira e se move com o scroll, em desktop e celular
+- [x] Bundle medido: JS inicial sem Three.js; total dentro da meta ou com plano para caber
 - [ ] Revisão com você
 
 ### Fase 2: Cenas
