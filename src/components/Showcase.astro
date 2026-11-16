@@ -1,0 +1,169 @@
+---
+import Base from "../layouts/Base.astro";
+import { colorIds, copy, sceneIds, type Lang } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const text = copy[lang];
+---
+
+<Base title={text.meta.title} description={text.meta.description}>
+  <main>
+    {
+      sceneIds.map((id) => {
+        const scene = text.scenes[id];
+        const Heading = id === "intro" ? "h1" : "h2";
+        return (
+          <section class={`scene scene--${id}`} id={id} data-scene-id={id} aria-labelledby={`${id}-title`}>
+            <div class="copy">
+              <p class="eyebrow">{scene.eyebrow}</p>
+              <Heading id={`${id}-title`}>{scene.title}</Heading>
+              <p class="body">{scene.body}</p>
+
+              {id === "inside" && (
+                <ol class="layers">
+                  {text.layers.map((layer) => (
+                    <li>{layer}</li>
+                  ))}
+                </ol>
+              )}
+
+              {id === "colors" && (
+                <ul class="colors">
+                  {colorIds.map((color) => (
+                    <li data-color-id={color}>{text.colors[color]}</li>
+                  ))}
+                </ul>
+              )}
+
+              {id === "specs" && (
+                <table class="specs">
+                  <caption>{text.specs.caption}</caption>
+                  <tbody>
+                    {text.specs.rows.map(([label, value]) => (
+                      <tr>
+                        <th scope="row">{label}</th>
+                        <td>{value}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </section>
+        );
+      })
+    }
+  </main>
+</Base>
+
+<style>
+  .scene {
+    min-height: 100svh;
+    display: grid;
+    align-items: end;
+    padding: var(--space-l) var(--gutter);
+  }
+
+  .copy {
+    max-width: 34rem;
+  }
+
+  @media (min-width: 1024px) {
+    .scene {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: center;
+    }
+  }
+
+  .scene--intro {
+    align-items: center;
+  }
+
+  .scene--intro h1 {
+    font-size: var(--step-3);
+    font-weight: 800;
+  }
+
+  h2 {
+    font-size: var(--step-2);
+    font-weight: 700;
+  }
+
+  .eyebrow {
+    color: var(--accent);
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    margin: 0 0 var(--space-s);
+    text-transform: uppercase;
+  }
+
+  .body {
+    color: var(--muted);
+    font-size: var(--step-1);
+    line-height: 1.4;
+    margin: var(--space-s) 0 0;
+  }
+
+  .layers,
+  .colors {
+    margin: var(--space-m) 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .layers {
+    counter-reset: layer;
+  }
+
+  .layers li {
+    counter-increment: layer;
+    border-top: 1px solid var(--line);
+    padding-top: 0.5rem;
+  }
+
+  .layers li::before {
+    content: counter(layer, decimal-leading-zero) "  ";
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .colors {
+    grid-auto-flow: column;
+    justify-content: start;
+    gap: var(--space-s);
+  }
+
+  .specs {
+    width: 100%;
+    margin-top: var(--space-m);
+    border-collapse: collapse;
+  }
+
+  .specs caption {
+    color: var(--muted);
+    font-size: 0.875rem;
+    text-align: left;
+    padding-bottom: 0.5rem;
+  }
+
+  .specs th,
+  .specs td {
+    border-top: 1px solid var(--line);
+    padding: 0.6rem 0;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .specs th {
+    color: var(--muted);
+    font-weight: 500;
+    padding-right: var(--space-s);
+  }
+</style>

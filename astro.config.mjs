@@ -1,0 +1,21 @@
+// @ts-check
+import { defineConfig, fontProviders } from "astro/config";
+
+export default defineConfig({
+  // O site mora em <usuario>.github.io/vitrine-celular/
+  base: "/vitrine-celular",
+  i18n: {
+    locales: ["pt", "en"],
+    defaultLocale: "pt",
+    routing: { prefixDefaultLocale: false },
+  },
+  fonts: [
+    {
+      provider: fontProviders.fontsource(),
+      name: "Manrope",
+      cssVariable: "--font-sans",
+      weights: ["200 800"],
+      fallbacks: ["system-ui", "sans-serif"],
+    },
+  ],
+});

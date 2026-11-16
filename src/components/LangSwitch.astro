@@ -1,0 +1,29 @@
+---
+import { htmlLang, languages, switchLangPath, type Lang } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const target: Lang = lang === "pt" ? "en" : "pt";
+const href = switchLangPath(Astro.url.pathname, target, import.meta.env.BASE_URL);
+---
+
+<a class="lang-switch" href={href} hreflang={htmlLang[target]} lang={htmlLang[target]}>
+  {languages[target]}
+</a>
+
+<style>
+  .lang-switch {
+    color: var(--muted);
+    font-size: 0.875rem;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .lang-switch:hover {
+    color: var(--accent);
+  }
+</style>

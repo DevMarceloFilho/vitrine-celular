@@ -11,9 +11,11 @@ Verificação padrão de toda tarefa: `npm run build && npm run check && npx pla
 **Descrição:** Cria o projeto Astro 7 reaproveitando do portfólio a config, os tokens, as fontes, o i18n, o `LangSwitch` e o Playwright, com `base: "/vitrine-celular"`. As 7 cenas entram como seções HTML com o texto PT/EN e as especificações fictícias, ainda sem 3D.
 
 **Aceite:**
-- [ ] `/vitrine-celular/` e `/vitrine-celular/en/` carregam com as 7 seções, o `lang` certo e sem erro no console
-- [ ] O seletor de idioma funciona sob a base
-- [ ] `grep -riE "iphone|apple" src/` não encontra nada
+- [x] `/vitrine-celular/` e `/vitrine-celular/en/` carregam com as 7 seções, o `lang` certo e sem erro no console
+- [x] O seletor de idioma funciona sob a base
+- [x] `grep -riE "iphone|apple" src/` não encontra nada
+
+> Feita em 2026-11-16: 21 testes (5 de unidade + 8 E2E × desktop/mobile). Fonte Manrope e acento violeta `#9b8cff`, para a marca Orbe ter identidade própria, diferente do portfólio.
 
 **Dependências:** nenhuma · **Tamanho:** M
 

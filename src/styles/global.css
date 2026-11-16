@@ -1,0 +1,58 @@
+:root {
+  /* Cores */
+  --bg: #060607;
+  --surface: #111114;
+  --text: #f0efe9;
+  --muted: #8e8e96;
+  --accent: #9b8cff;
+  --line: #24242a;
+
+  /* Tipografia (Manrope vem da Fonts API do Astro) */
+  --step-0: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --step-1: clamp(1.25rem, 1.1rem + 0.75vw, 1.75rem);
+  --step-2: clamp(2rem, 1.4rem + 3vw, 4rem);
+  --step-3: clamp(3.25rem, 2rem + 7vw, 9rem);
+
+  /* Espaçamento */
+  --space-s: 1rem;
+  --space-m: 2rem;
+  --space-l: 4rem;
+  --gutter: clamp(1rem, 5vw, 5rem);
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--step-0);
+  line-height: 1.6;
+}
+
+h1,
+h2 {
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+a {
+  color: var(--accent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}

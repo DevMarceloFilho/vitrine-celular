@@ -1,0 +1,61 @@
+---
+import { Font } from "astro:assets";
+import LangSwitch from "../components/LangSwitch.astro";
+import { defaultLang, htmlLang, isLang, languages, switchLangPath, type Lang } from "../i18n/ui";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const lang: Lang = isLang(Astro.currentLocale) ? Astro.currentLocale : defaultLang;
+const baseUrl = import.meta.env.BASE_URL;
+const assetBase = baseUrl.replace(/\/+$/, "");
+const siteRoot = Astro.site ?? Astro.url;
+const alternates = (Object.keys(languages) as Lang[]).map((l) => ({
+  hreflang: htmlLang[l],
+  href: new URL(switchLangPath(Astro.url.pathname, l, baseUrl), siteRoot).href,
+}));
+---
+
+<!doctype html>
+<html lang={htmlLang[lang]}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href={`${assetBase}/favicon.svg`} />
+    {alternates.map((a) => <link rel="alternate" hreflang={a.hreflang} href={a.href} />)}
+    <Font cssVariable="--font-sans" preload />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="wordmark" href="#intro">Orbe</a>
+      <LangSwitch lang={lang} />
+    </header>
+    <slot />
+  </body>
+</html>
+
+<style>
+  .site-header {
+    position: fixed;
+    inset: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-s) var(--gutter);
+    z-index: 10;
+  }
+
+  .wordmark {
+    color: var(--text);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+</style>

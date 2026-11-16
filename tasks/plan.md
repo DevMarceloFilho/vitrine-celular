@@ -29,7 +29,7 @@ A ordem segue o risco: primeiro o esqueleto com o texto das cenas, depois o palc
 
 ### Fase 1: Base e risco
 
-- [ ] V1: Esqueleto Astro + 7 cenas em HTML (PT/EN) + testes de fumaça
+- [x] V1: Esqueleto Astro + 7 cenas em HTML (PT/EN) + testes de fumaça
 - [ ] V2: Palco 3D mínimo com carregamento tardio
 - [ ] V3: Coreografia pura + timeline ligada ao scroll
 
