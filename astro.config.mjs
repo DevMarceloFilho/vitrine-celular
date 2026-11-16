@@ -4,6 +4,8 @@ import { defineConfig, fontProviders } from "astro/config";
 export default defineConfig({
   // O site mora em <usuario>.github.io/vitrine-celular/
   base: "/vitrine-celular",
+  // CSS pequeno: embutido no HTML para não bloquear a primeira renderização.
+  build: { inlineStylesheets: "always" },
   i18n: {
     locales: ["pt", "en"],
     defaultLocale: "pt",

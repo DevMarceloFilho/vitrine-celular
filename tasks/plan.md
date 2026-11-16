@@ -51,11 +51,11 @@ A ordem segue o risco: primeiro o esqueleto com o texto das cenas, depois o palc
 - [ ] Todas as cenas funcionam; revisão visual com você
 
 - [x] V7: Pôsteres e caminhos sem WebGL, sem JS e com movimento reduzido
-- [x] V8: Acessibilidade, SEO e performance (axe, Lighthouse, trace, tamanho do bundle) — falta só a nota do Lighthouse
+- [x] V8: Acessibilidade, SEO e performance (axe, Lighthouse, trace, tamanho do bundle)
 
 ### Checkpoint: Completo
 
-- [ ] Critérios 1–6 da spec atendidos
+- [x] Critérios 1–6 da spec atendidos
 
 ### Fase 3: Publicação
 

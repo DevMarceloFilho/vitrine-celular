@@ -141,7 +141,7 @@ As poses de "Design" e "Câmera" passam a mostrar esses detalhes.
 
 **Aceite:**
 - [x] O axe não encontra violação séria ou crítica nas duas páginas
-- [ ] Lighthouse mobile: Performance ≥ 85, Acessibilidade/Boas práticas/SEO ≥ 95; LCP < 2,5 s; CLS < 0,1 → LCP e CLS medidos e dentro da meta; a nota do Lighthouse depende de rodar o `lighthouse` (pacote fora da stack, aguarda aprovação)
+- [x] Lighthouse mobile: Performance ≥ 85, Acessibilidade/Boas práticas/SEO ≥ 95; LCP < 2,5 s; CLS < 0,1
 - [x] JS total ≤ 250 KB gzip; trace do desktop sem tarefas longas (> 50 ms) durante o scroll
 
 > Feita em 2026-11-16. 78 testes (axe em PT/EN, com 3D e com pôsteres; Open Graph e canonical por idioma).
@@ -162,7 +162,7 @@ As poses de "Design" e "Câmera" passam a mostrar esses detalhes.
 
 ### Checkpoint: Completo
 
-- [ ] Critérios 1–6 da spec atendidos
+- [x] Critérios 1–6 da spec atendidos
 
 ## Fase 3: Publicação
 
@@ -190,3 +190,18 @@ As poses de "Design" e "Câmera" passam a mostrar esses detalhes.
 ### Checkpoint: Pronto
 
 - [ ] Critério 7 da spec atendido e site no ar
+
+## Lighthouse 13.6.0 (2026-11-16, preview local)
+
+Rodado via `npx -y lighthouse@13.6.0 --port=9223` contra um Chromium aberto pelo Playwright (o chrome-launcher não consegue iniciar o Chromium do Playwright no Windows). O pacote não foi adicionado ao projeto.
+
+| Perfil | Performance | Acessibilidade | Boas práticas | SEO | LCP | TBT | CLS |
+|---|---|---|---|---|---|---|---|
+| Mobile, 1ª rodada | 69 | 100 | 100 | 100 | 3,0 s | 1.320 ms | 0,039 |
+| Mobile, final | **98** | 100 | 100 | 100 | 2,3 s | 120 ms | 0,039 |
+| Desktop, final | **100** | 100 | 100 | 100 | 0,5 s | 0 ms | 0 |
+
+O que mudou entre as rodadas, sem mudar o comportamento:
+- o teste de suporte a WebGL criava um contexto só para checar e acordava o processo da GPU (tarefa de ~470 ms): trocado por checagem da API, com queda para os pôsteres se o contexto real falhar;
+- `fetchpriority="high"` no pôster da abertura (o elemento do LCP);
+- CSS embutido no HTML (`build.inlineStylesheets: "always"`), que antes bloqueava a renderização.

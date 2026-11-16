@@ -87,6 +87,7 @@ const postersFor = (id: SceneId) =>
                       data-poster
                       data-poster-color={color}
                       loading={id === "intro" ? "eager" : "lazy"}
+                      fetchpriority={id === "intro" ? "high" : "auto"}
                     />
                   ),
               )}

@@ -1,16 +1,11 @@
 // Script inicial: pequeno de propósito. O 3D (Three.js) só é baixado depois do load,
 // e só quando há WebGL e o movimento não está reduzido; caso contrário ficam os pôsteres.
 
-function supportsWebGL(): boolean {
-  try {
-    const probe = document.createElement("canvas");
-    const gl = probe.getContext("webgl2") ?? probe.getContext("webgl");
-    gl?.getExtension("WEBGL_lose_context")?.loseContext();
-    return gl !== null;
-  } catch {
-    return false;
-  }
-}
+/**
+ * Checagem barata: não cria contexto WebGL (criar um só para testar acordava o processo da GPU
+ * e gerava uma tarefa longa). Se o contexto real falhar, a montagem cai nos pôsteres.
+ */
+const hasWebGLApi = () => typeof WebGL2RenderingContext !== "undefined" || typeof WebGLRenderingContext !== "undefined";
 
 /**
  * Seletor de acabamento: funciona com ou sem 3D. Marca o botão, grava `data-color` no <html>
@@ -32,13 +27,18 @@ function initColorPicker(): void {
 initColorPicker();
 
 async function start(): Promise<void> {
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches || !supportsWebGL()) return;
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches || !hasWebGLApi()) return;
 
   const canvas = document.querySelector<HTMLCanvasElement>("canvas[data-stage]");
   if (!canvas) return;
 
-  const { mountPhoneStage } = await import("../three/mount");
-  await mountPhoneStage(canvas);
+  try {
+    const { mountPhoneStage } = await import("../three/mount");
+    await mountPhoneStage(canvas);
+  } catch {
+    // WebGL indisponível ou bloqueado: a página segue com os pôsteres.
+    delete document.documentElement.dataset.stage;
+  }
 }
 
 if (document.readyState === "complete") void start();
