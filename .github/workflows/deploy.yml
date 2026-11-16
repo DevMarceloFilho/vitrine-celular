@@ -1,0 +1,33 @@
+# Publica a vitrine no GitHub Pages a cada push na main (modelo oficial do Astro).
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Install, build and upload
+        uses: withastro/action@v6
+        # Node 24 por padrão (o Astro 7 pede ≥ 22.23). Os pôsteres já vêm commitados em src/assets/posters.
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

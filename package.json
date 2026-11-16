@@ -10,7 +10,8 @@
     "check": "astro check",
     "test": "playwright test",
     "posters": "node scripts/posters.mjs",
-    "measure": "node scripts/measure.mjs"
+    "measure": "node scripts/measure.mjs",
+    "gif": "node scripts/gif.mjs"
   },
   "dependencies": {
     "astro": "^7.4.12",
