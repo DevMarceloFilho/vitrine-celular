@@ -38,11 +38,11 @@ A ordem segue o risco: primeiro o esqueleto com o texto das cenas, depois o palc
 - [x] Build, check e testes passam
 - [x] O aparelho (ainda simples) gira e se move com o scroll, em desktop e celular
 - [x] Bundle medido: JS inicial sem Three.js; total dentro da meta ou com plano para caber
-- [ ] Revisão com você
+- [x] Revisão com você
 
 ### Fase 2: Cenas
 
-- [ ] V4: Modelo completo (traseira, lentes, botões, materiais, tela)
+- [x] V4: Modelo completo (traseira, lentes, botões, materiais, tela)
 - [ ] V5: Vista explodida com rótulos
 - [ ] V6: Seletor de cores
 

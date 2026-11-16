@@ -6,6 +6,7 @@ import {
   PMREMGenerator,
   Scene,
   SRGBColorSpace,
+  Texture,
   WebGLRenderer,
 } from "three";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
@@ -15,7 +16,8 @@ export interface Stage {
   camera: PerspectiveCamera;
   /** Agenda um único render no próximo frame (render sob demanda, sem loop contínuo). */
   requestRender(): void;
-  dispose(): void;
+  /** Libera tudo e devolve o que ainda restou na GPU (deve ser zero). */
+  dispose(): { geometries: number; textures: number };
 }
 
 const MAX_PIXEL_RATIO_DESKTOP = 2;
@@ -29,8 +31,9 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
   const scene = new Scene();
   const pmrem = new PMREMGenerator(renderer);
   const room = new RoomEnvironment();
-  const envMap = pmrem.fromScene(room, 0.04).texture;
-  scene.environment = envMap;
+  // O ambiente é um render target: precisa ser liberado inteiro, não só a textura.
+  const envTarget = pmrem.fromScene(room, 0.04);
+  scene.environment = envTarget.texture;
   room.dispose();
   pmrem.dispose();
 
@@ -72,10 +75,19 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
         if (!(object instanceof Mesh)) return;
         object.geometry.dispose();
         const materials: Material[] = Array.isArray(object.material) ? object.material : [object.material];
-        materials.forEach((m) => m.dispose());
+        for (const material of materials) {
+          // O material não libera as próprias texturas (ex.: a CanvasTexture da tela).
+          for (const key in material) {
+            const value = (material as unknown as Record<string, unknown>)[key];
+            if (value instanceof Texture) value.dispose();
+          }
+          material.dispose();
+        }
       });
-      envMap.dispose();
+      envTarget.dispose();
       renderer.dispose();
+      const { geometries, textures } = renderer.info.memory;
+      return { geometries, textures };
     },
   };
 }

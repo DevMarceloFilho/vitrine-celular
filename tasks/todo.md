@@ -72,9 +72,13 @@ Verificação padrão de toda tarefa: `npm run build && npm run check && npx pla
 As poses de "Design" e "Câmera" passam a mostrar esses detalhes.
 
 **Aceite:**
-- [ ] Pose "Design" mostra a traseira e pose "Câmera" enquadra o módulo de lentes (conferido no navegador em 1440px e 375px)
-- [ ] Nenhuma textura ou modelo externo (só código)
-- [ ] `dispose` libera todas as geometrias, materiais e texturas (contagem de `renderer.info.memory` volta a zero no teste)
+- [x] Pose "Design" mostra a traseira e pose "Câmera" enquadra o módulo de lentes (conferido no navegador em 1440px e 375px)
+- [x] Nenhuma textura ou modelo externo (só código)
+- [x] `dispose` libera todas as geometrias, materiais e texturas (contagem de `renderer.info.memory` volta a zero no teste)
+
+> Feita em 2026-11-16. 46 testes. Módulo de câmera circular (identidade "Orbe"), 3 lentes em triângulo e flash; tela de bloqueio em `CanvasTexture` com hora 08:30.
+> Também entraram as pendências da V3: balanço da abertura (`idleSway`, puro e testado; único render contínuo, só no topo) e degradê atrás do texto no celular.
+> Achados: o ambiente do PMREM é um render target e precisa de `dispose()` inteiro; o renderer r187 guarda um LUT de DFG que só sai no `renderer.dispose()`.
 
 **Dependências:** V3 · **Tamanho:** M
 

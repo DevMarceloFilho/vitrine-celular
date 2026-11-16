@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { keyframes, poseAt, sceneAt, stopsFor, type Pose } from "../../src/three/choreography";
+import { idleSway, keyframes, poseAt, sceneAt, stopsFor, type Pose } from "../../src/three/choreography";
 
 const STOPS = [0, 800, 1600, 2400, 3200, 4000, 4800];
 const FIELDS: (keyof Pose)[] = ["rotationX", "rotationY", "positionY", "cameraZ", "explode"];
@@ -54,4 +54,17 @@ test("as paradas nunca passam do scroll máximo", () => {
   ];
 
   expect(stopsFor(sections, 900, 600)).toEqual([0, 600]);
+});
+
+test("o balanço da abertura tem força total no topo", () => {
+  const sway = Math.max(...[0, 0.5, 1, 1.5, 2].map((t) => Math.abs(idleSway(t, 0, 800))));
+  expect(sway).toBeGreaterThan(0.2);
+});
+
+test("o balanço da abertura some antes da metade do caminho até a próxima cena", () => {
+  for (const t of [0, 0.7, 1.3, 2.9]) expect(idleSway(t, 400, 800)).toBe(0);
+});
+
+test("o balanço da abertura diminui aos poucos, sem salto", () => {
+  expect(Math.abs(idleSway(1.3, 100, 800))).toBeLessThan(Math.abs(idleSway(1.3, 0, 800)));
 });

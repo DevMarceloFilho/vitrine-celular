@@ -9,7 +9,7 @@ gsap.registerPlugin(ScrollTrigger);
  * Liga a posição do scroll à coreografia. As paradas de cada cena são medidas no DOM
  * e refeitas a cada refresh do ScrollTrigger (resize, fontes, conteúdo).
  */
-export function bindScroll(onPose: (pose: Pose, scene: SceneId) => void): void {
+export function bindScroll(onPose: (pose: Pose, scene: SceneId) => void): { gapToNext(): number } {
   let stops: number[] = [];
 
   const measure = () => {
@@ -38,4 +38,6 @@ export function bindScroll(onPose: (pose: Pose, scene: SceneId) => void): void {
 
   measure();
   update();
+
+  return { gapToNext: () => (stops.length > 1 ? stops[1] - stops[0] : 0) };
 }

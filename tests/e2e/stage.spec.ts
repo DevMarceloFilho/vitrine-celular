@@ -57,3 +57,14 @@ test.describe("com movimento reduzido", () => {
     expect(await scriptBytes(page)).toBeLessThan(20_000);
   });
 });
+
+test.describe("recursos do 3D", () => {
+  test("o dispose libera todas as geometrias e texturas", async ({ page }) => {
+    await page.goto("./");
+    await expect(page.locator("html")).toHaveAttribute("data-stage", "ready");
+
+    const memory = await page.evaluate(() => (window as unknown as { __orbe: { dispose(): unknown } }).__orbe.dispose());
+
+    expect(memory).toEqual({ geometries: 0, textures: 0 });
+  });
+});

@@ -57,6 +57,17 @@ export function poseAt(scroll: number, stops: number[]): Pose {
   };
 }
 
+/**
+ * Balanço lento do aparelho na abertura (radianos, somado à rotação Y). Tem força total no topo
+ * e some suavemente até a metade do caminho para a próxima cena (`gapToNext` em pixels).
+ */
+export function idleSway(timeSeconds: number, scroll: number, gapToNext: number): number {
+  const fade = gapToNext > 0 ? clamp(scroll / (gapToNext / 2), 0, 1) : 1;
+  const weight = 1 - smoothstep(fade);
+  if (weight === 0) return 0;
+  return Math.sin(timeSeconds * 0.8) * 0.35 * weight;
+}
+
 /** Cena cuja parada está mais perto de `scroll`. */
 export function sceneAt(scroll: number, stops: number[]): SceneId {
   let nearest = 0;
