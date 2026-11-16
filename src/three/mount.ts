@@ -1,7 +1,7 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Color, Group } from "three";
-import { colorways, isColor, type SceneId } from "../i18n/ui";
+import { type ColorId, colorways, isColor, type SceneId } from "../i18n/ui";
 import { initSmoothScroll } from "../scripts/smooth-scroll";
 import { bindScroll } from "../scripts/timeline";
 import { idleSway, keyframes, type Pose } from "./choreography";
@@ -25,8 +25,11 @@ const MOBILE: Layout = { x: 0, y: 0.75, scale: 0.8 };
 
 declare global {
   interface Window {
-    /** Gancho mínimo para os testes verificarem a liberação de memória. */
-    __orbe?: { dispose(): { geometries: number; textures: number } };
+    /** Ganchos mínimos: os testes verificam a memória e o `npm run posters` captura as cenas. */
+    __orbe?: {
+      dispose(): { geometries: number; textures: number };
+      snapshot?(scene: SceneId, color: ColorId): string;
+    };
   }
 }
 
@@ -39,6 +42,26 @@ export function mountPhoneStage(canvas: HTMLCanvasElement): PhoneStage {
   const rig = new Group();
   rig.add(phone.group);
   stage.scene.add(rig);
+
+  // Modo pôster (?poster): sem scroll; o script pede cada cena e lê o canvas como PNG transparente.
+  if (new URLSearchParams(location.search).has("poster")) {
+    window.__orbe = {
+      dispose: () => stage.dispose(),
+      snapshot(sceneId, colorId) {
+        const p = keyframes[sceneId];
+        rig.rotation.set(p.rotationX, p.rotationY, 0);
+        rig.position.set(0, p.positionY, 0);
+        phone.setExplode(p.explode);
+        phone.setColorway(colorways[colorId]);
+        stage.camera.position.z = p.cameraZ;
+        stage.renderNow();
+        return canvas.toDataURL("image/png");
+      },
+    };
+    document.documentElement.dataset.stage = "ready";
+    document.documentElement.dataset.poster = "ready";
+    return { stage, phone };
+  }
 
   const labelsRoot = document.querySelector<HTMLElement>("[data-labels]");
   const labels = labelsRoot ? createLabels(labelsRoot, phone.anchors, stage.camera, canvas) : null;

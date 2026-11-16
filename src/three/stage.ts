@@ -18,6 +18,8 @@ export interface Stage {
   requestRender(): void;
   /** Chamado logo depois de cada render, no mesmo frame (ex.: posicionar rótulos HTML). */
   onRender(callback: () => void): void;
+  /** Render síncrono (usado para capturar os pôsteres). */
+  renderNow(): void;
   /** Libera tudo e devolve o que ainda restou na GPU (deve ser zero). */
   dispose(): { geometries: number; textures: number };
 }
@@ -73,6 +75,10 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
     camera,
     requestRender,
     onRender: (callback) => afterRender.push(callback),
+    renderNow: () => {
+      cancelAnimationFrame(frame);
+      render();
+    },
     dispose() {
       cancelAnimationFrame(frame);
       observer.disconnect();

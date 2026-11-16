@@ -106,7 +106,7 @@ As poses de "Design" e "Câmera" passam a mostrar esses detalhes.
 **Aceite:**
 - [x] Clicar em cada botão deixa só ele com `aria-pressed="true"` e muda o `data-color`
 - [x] Os botões funcionam por teclado (Tab + Enter/Espaço) e têm nome acessível com o nome da cor
-- [ ] Sem 3D (pôster), os botões trocam o pôster da cor correspondente → fica para a V7, que cria os pôsteres; o `data-color` já muda sem 3D (testado)
+- [x] Sem 3D (pôster), os botões trocam o pôster da cor correspondente (feito na V7)
 
 > Feita em 2026-11-16. 58 testes. O seletor vive no script inicial (funciona sem 3D) e avisa o 3D pelo evento `orbe:color`; o 3D aplica a cor já escolhida ao montar e faz a transição de 0,6 s com GSAP.
 
@@ -123,9 +123,13 @@ As poses de "Design" e "Câmera" passam a mostrar esses detalhes.
 **Descrição:** Cria o `npm run posters`, um script Playwright que captura o canvas na pose de cada cena e em cada cor, salvando em `src/assets/posters/`. Sem WebGL, sem JS ou com movimento reduzido, cada cena mostra o seu pôster via `<Picture>`, sem canvas.
 
 **Aceite:**
-- [ ] Com `reducedMotion: "reduce"`: nenhum canvas, os pôsteres visíveis, e o Three.js não é baixado
-- [ ] Com JavaScript desligado: pôsteres e todo o texto visíveis
-- [ ] Os pôsteres saem em WebP/AVIF com `width`/`height` (sem CLS)
+- [x] Com `reducedMotion: "reduce"`: nenhum canvas, os pôsteres visíveis, e o Three.js não é baixado
+- [x] Com JavaScript desligado: pôsteres e todo o texto visíveis
+- [x] Os pôsteres saem em WebP/AVIF com `width`/`height` (sem CLS)
+
+> Feita em 2026-11-16. 68 testes. 9 pôsteres (7 cenas + 2 cores extras) em PNG transparente; no build, AVIF/WebP de 4–9 KB cada.
+> Desvios: o script é `scripts/posters.mjs` (JS), porque um `.ts` com APIs do Node exigiria `@types/node`; ele usa as APIs `build()` e `preview()` do Astro e o modo `?poster` do 3D, que lê o canvas com `toDataURL`. O pôster da abertura aparece na hora para todo mundo e o 3D o substitui na mesma pose.
+> Bug achado: a regra da cor escolhida era mais específica que a que esconde os pôsteres com 3D; corrigido e coberto pelo teste no celular.
 
 **Dependências:** V5, V6 · **Tamanho:** M
 
