@@ -44,7 +44,7 @@ A ordem segue o risco: primeiro o esqueleto com o texto das cenas, depois o palc
 
 - [x] V4: Modelo completo (traseira, lentes, botões, materiais, tela)
 - [x] V5: Vista explodida com rótulos
-- [ ] V6: Seletor de cores
+- [x] V6: Seletor de cores
 
 ### Checkpoint: Cenas
 

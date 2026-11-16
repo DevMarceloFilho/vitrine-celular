@@ -26,6 +26,18 @@ export type SceneId = (typeof sceneIds)[number];
 
 export const colorIds = ["graphite", "sand", "mist"] as const;
 export type ColorId = (typeof colorIds)[number];
+export const defaultColor: ColorId = "graphite";
+
+/** Cores de cada acabamento: estrutura metálica e traseira de vidro fosco. */
+export const colorways: Record<ColorId, { frame: string; back: string }> = {
+  graphite: { frame: "#3a3b40", back: "#2b2c30" },
+  sand: { frame: "#b9a68a", back: "#d2c4ac" },
+  mist: { frame: "#8c9fb2", back: "#aebdcb" },
+};
+
+export function isColor(value: string | undefined): value is ColorId {
+  return value !== undefined && (colorIds as readonly string[]).includes(value);
+}
 
 /** Camadas da vista explodida, de frente para trás. */
 export const layerIds = ["screen", "frame", "battery", "board"] as const;
@@ -44,6 +56,7 @@ interface Copy {
   /** Rótulos curtos que flutuam sobre cada camada no 3D. */
   labels: Record<LayerId, string>;
   colors: Record<ColorId, string>;
+  colorsLabel: string;
   specs: { caption: string; rows: [string, string][] };
 }
 
@@ -82,6 +95,7 @@ export const copy: Record<Lang, Copy> = {
     layers: ["Tela OLED de 6,3\" a 120 Hz", "Estrutura em alumínio", "Bateria de 4.800 mAh", "Placa com o chip Núcleo N1"],
     labels: { screen: "Tela", frame: "Estrutura", battery: "Bateria", board: "Placa" },
     colors: { graphite: "Grafite", sand: "Areia", mist: "Névoa" },
+    colorsLabel: "Acabamentos",
     specs: {
       caption: "Especificações do Orbe One (fictícias)",
       rows: [
@@ -128,6 +142,7 @@ export const copy: Record<Lang, Copy> = {
     layers: ["6.3\" 120 Hz OLED display", "Aluminum frame", "4,800 mAh battery", "Logic board with the Núcleo N1 chip"],
     labels: { screen: "Display", frame: "Frame", battery: "Battery", board: "Board" },
     colors: { graphite: "Graphite", sand: "Sand", mist: "Mist" },
+    colorsLabel: "Finishes",
     specs: {
       caption: "Orbe One specifications (fictional)",
       rows: [

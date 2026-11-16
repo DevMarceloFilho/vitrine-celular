@@ -1,7 +1,17 @@
 ---
 import { Font } from "astro:assets";
 import LangSwitch from "../components/LangSwitch.astro";
-import { copy, defaultLang, htmlLang, isLang, languages, layerIds, switchLangPath, type Lang } from "../i18n/ui";
+import {
+  copy,
+  defaultColor,
+  defaultLang,
+  htmlLang,
+  isLang,
+  languages,
+  layerIds,
+  switchLangPath,
+  type Lang,
+} from "../i18n/ui";
 import "../styles/global.css";
 
 interface Props {
@@ -21,7 +31,7 @@ const alternates = (Object.keys(languages) as Lang[]).map((l) => ({
 ---
 
 <!doctype html>
-<html lang={htmlLang[lang]}>
+<html lang={htmlLang[lang]} data-color={defaultColor}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

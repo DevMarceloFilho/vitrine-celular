@@ -1,7 +1,7 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Group } from "three";
-import type { SceneId } from "../i18n/ui";
+import { Color, Group } from "three";
+import { colorways, isColor, type SceneId } from "../i18n/ui";
 import { initSmoothScroll } from "../scripts/smooth-scroll";
 import { bindScroll } from "../scripts/timeline";
 import { idleSway, keyframes, type Pose } from "./choreography";
@@ -82,6 +82,22 @@ export function mountPhoneStage(canvas: HTMLCanvasElement): PhoneStage {
     if (next === 0 && sway === 0) return;
     sway = next;
     apply();
+  });
+
+  // Acabamento: começa no que já está escolhido (o clique pode ter vindo antes do 3D carregar)
+  // e depois faz a transição de 0,6 s a cada troca.
+  const current = document.documentElement.dataset.color;
+  if (isColor(current)) phone.setColorway(colorways[current]);
+  document.addEventListener("orbe:color", (event) => {
+    const id = (event as CustomEvent<string>).detail;
+    if (!isColor(id)) return;
+    const targets = [
+      [phone.materials.frame.color, new Color(colorways[id].frame)],
+      [phone.materials.back.color, new Color(colorways[id].back)],
+    ] as const;
+    for (const [color, target] of targets) {
+      gsap.to(color, { r: target.r, g: target.g, b: target.b, duration: 0.6, ease: "power2.inOut", onUpdate: stage.requestRender });
+    }
   });
 
   window.__orbe = { dispose: () => stage.dispose() };

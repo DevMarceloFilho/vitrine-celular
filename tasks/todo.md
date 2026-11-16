@@ -104,9 +104,11 @@ As poses de "Design" e "Câmera" passam a mostrar esses detalhes.
 **Descrição:** Cria 3 botões de acabamento na cena "Cores". Clicar troca a cor do material em 0,6 s, atualiza o `aria-pressed` e o `data-color`.
 
 **Aceite:**
-- [ ] Clicar em cada botão deixa só ele com `aria-pressed="true"` e muda o `data-color`
-- [ ] Os botões funcionam por teclado (Tab + Enter/Espaço) e têm nome acessível com o nome da cor
-- [ ] Sem 3D (pôster), os botões trocam o pôster da cor correspondente
+- [x] Clicar em cada botão deixa só ele com `aria-pressed="true"` e muda o `data-color`
+- [x] Os botões funcionam por teclado (Tab + Enter/Espaço) e têm nome acessível com o nome da cor
+- [ ] Sem 3D (pôster), os botões trocam o pôster da cor correspondente → fica para a V7, que cria os pôsteres; o `data-color` já muda sem 3D (testado)
+
+> Feita em 2026-11-16. 58 testes. O seletor vive no script inicial (funciona sem 3D) e avisa o 3D pelo evento `orbe:color`; o 3D aplica a cor já escolhida ao montar e faz a transição de 0,6 s com GSAP.
 
 **Dependências:** V4 · **Tamanho:** S
 

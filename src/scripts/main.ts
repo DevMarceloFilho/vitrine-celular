@@ -12,6 +12,25 @@ function supportsWebGL(): boolean {
   }
 }
 
+/**
+ * Seletor de acabamento: funciona com ou sem 3D. Marca o botão, grava `data-color` no <html>
+ * (que também escolhe o pôster sem 3D) e avisa o 3D pelo evento `orbe:color`.
+ */
+function initColorPicker(): void {
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>("[data-color-option]")];
+  for (const button of buttons) {
+    button.addEventListener("click", () => {
+      const color = button.dataset.colorOption;
+      if (!color) return;
+      for (const other of buttons) other.setAttribute("aria-pressed", String(other === button));
+      document.documentElement.dataset.color = color;
+      document.dispatchEvent(new CustomEvent("orbe:color", { detail: color }));
+    });
+  }
+}
+
+initColorPicker();
+
 async function start(): Promise<void> {
   if (matchMedia("(prefers-reduced-motion: reduce)").matches || !supportsWebGL()) return;
 
