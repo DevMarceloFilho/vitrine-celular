@@ -1,19 +1,23 @@
 import {
+  CompressedCubeTexture,
   DirectionalLight,
-  EquirectangularReflectionMapping,
+  HalfFloatType,
   HemisphereLight,
+  LinearFilter,
+  LinearMipmapLinearFilter,
+  LinearSRGBColorSpace,
   type Material,
   Mesh,
   NeutralToneMapping,
   PerspectiveCamera,
-  PMREMGenerator,
+  RGBAFormat,
   Scene,
   SRGBColorSpace,
   Texture,
   WebGLRenderer,
-  type WebGLRenderTarget,
 } from "three";
 import { HDRLoader } from "three/addons/loaders/HDRLoader.js";
+import { pmremLayout } from "./pmrem-layout";
 
 export interface Stage {
   scene: Scene;
@@ -27,8 +31,8 @@ export interface Stage {
   /** Luzes diretas: deixam o aparelho bonito já no primeiro frame, antes do HDRI chegar. */
   buildLighting(): void;
   /**
-   * Reflexos reais: carrega o HDRI de estúdio e gera o ambiente (PMREM). O PMREM compila shaders
-   * de forma síncrona (~0,2–0,6 s): a página chama isto antes de compilar, com o pôster ainda na tela.
+   * Reflexos reais: carrega o ambiente de estúdio já pré-calculado (`npm run bake:env`) e o usa direto
+   * como PMREM. Nada de PMREMGenerator no navegador: ele compilava shaders de forma síncrona (~0,9 s).
    */
   loadEnvironment(url: string): Promise<void>;
   /** Compila os shaders da cena em paralelo, sem travar a página (KHR_parallel_shader_compile). */
@@ -61,16 +65,14 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
     scene.add(...lights);
   };
 
-  let envTarget: WebGLRenderTarget | null = null;
+  let environment: CompressedCubeTexture | null = null;
   const loadEnvironment = async (url: string) => {
-    if (envTarget) return;
-    const equirect = await new HDRLoader().loadAsync(url);
-    equirect.mapping = EquirectangularReflectionMapping;
-    const pmrem = new PMREMGenerator(renderer);
-    envTarget = pmrem.fromEquirectangular(equirect);
-    equirect.dispose();
-    pmrem.dispose();
-    scene.environment = envTarget.texture;
+    if (environment) return;
+    // O HDRLoader só decodifica (RGBE → meio-float); a textura dele nunca vai para a GPU.
+    const packed = await new HDRLoader().loadAsync(url);
+    environment = unpackPmrem(packed.image as PackedImage);
+    packed.dispose();
+    scene.environment = environment;
     scene.environmentIntensity = 1.1;
     // Com reflexos reais, as luzes diretas viram só realce.
     for (const light of lights) light.intensity *= 0.35;
@@ -87,8 +89,11 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
     renderer.render(scene, camera);
     for (const callback of afterRender) callback();
   };
+  // Nada é desenhado antes de os shaders terminarem de compilar: um render no meio da compilação paralela
+  // usaria programas ainda incompletos e travaria a página esperando por eles (~0,5 s com a GPU fria).
+  let compiled = false;
   const requestRender = () => {
-    if (!frame) frame = requestAnimationFrame(render);
+    if (compiled && !frame) frame = requestAnimationFrame(render);
   };
 
   const resize = () => {
@@ -119,6 +124,8 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
     loadEnvironment,
     compile: async () => {
       await renderer.compileAsync(scene, camera);
+      compiled = true;
+      requestRender();
     },
     dispose() {
       cancelAnimationFrame(frame);
@@ -136,10 +143,46 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
           material.dispose();
         }
       });
-      envTarget?.dispose();
+      environment?.dispose();
       renderer.dispose();
       const { geometries, textures } = renderer.info.memory;
       return { geometries, textures };
     },
   };
+}
+
+interface PackedImage {
+  data: Uint16Array;
+  width: number;
+}
+
+/**
+ * Remonta o cubemap gravado pelo `scripts/bake-environment.mjs` (layout em pmrem-layout.ts) como
+ * textura PMREM pronta: 6 faces × níveis de desfoque, em meio-float, sem nenhum shader extra.
+ */
+function unpackPmrem({ data, width }: PackedImage): CompressedCubeTexture {
+  const { size, blockHeight, levels } = pmremLayout(width);
+  const faces = Array.from({ length: 6 }, (_, face) => ({
+    width: size,
+    height: size,
+    mipmaps: levels.map(({ size: s, x, y }) => {
+      const mip = new Uint16Array(s * s * 4);
+      for (let row = 0; row < s; row++) {
+        const start = ((face * blockHeight + y + row) * width + x) * 4;
+        mip.set(data.subarray(start, start + s * 4), row * s * 4);
+      }
+      return { data: mip, width: s, height: s };
+    }),
+  }));
+  // Os tipos só preveem formatos comprimidos, mas o three envia RGBA sem compressão por este mesmo
+  // caminho (é o que o KTX2Loader faz com cubemaps RGBA16F).
+  type Images = ConstructorParameters<typeof CompressedCubeTexture>[0];
+  type Format = ConstructorParameters<typeof CompressedCubeTexture>[1];
+  const texture = new CompressedCubeTexture(faces as unknown as Images, RGBAFormat as unknown as Format, HalfFloatType);
+  texture.isPMREMTexture = true;
+  texture.colorSpace = LinearSRGBColorSpace;
+  texture.minFilter = LinearMipmapLinearFilter;
+  texture.magFilter = LinearFilter;
+  texture.needsUpdate = true;
+  return texture;
 }

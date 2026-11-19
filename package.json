@@ -11,7 +11,8 @@
     "test": "playwright test",
     "posters": "node scripts/posters.mjs",
     "measure": "node scripts/measure.mjs",
-    "gif": "node scripts/gif.mjs"
+    "gif": "node scripts/gif.mjs",
+    "bake:env": "node scripts/bake-environment.mjs"
   },
   "dependencies": {
     "astro": "^7.4.12",

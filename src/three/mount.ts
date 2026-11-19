@@ -51,11 +51,11 @@ export async function mountPhoneStage(canvas: HTMLCanvasElement): Promise<PhoneS
   await nextFrame();
   stage.buildLighting();
   performance.mark("orbe:lighting");
-  // Modelo e HDRI baixam em paralelo. O ambiente (PMREM) é gerado ANTES de compilar: assim os
-  // shaders já nascem com reflexo e nada recompila depois, no meio do scroll (eram ~1,2 s de travadas).
+  // Modelo e ambiente baixam em paralelo. O ambiente (PMREM pré-calculado) entra ANTES de compilar: assim
+  // os shaders já nascem com reflexo e nada recompila depois, no meio do scroll (eram ~1,2 s de travadas).
   const [phone] = await Promise.all([
     loadPhone(`${ASSETS}/models/orbe-one.glb`),
-    stage.loadEnvironment(`${ASSETS}/env/studio_small_09_512.hdr`),
+    stage.loadEnvironment(`${ASSETS}/env/studio_small_09_pmrem.hdr`),
   ]);
   document.documentElement.dataset.environment = "ready";
   performance.mark("orbe:environment");

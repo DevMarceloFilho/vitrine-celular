@@ -13,7 +13,7 @@ Página de lançamento de um celular que não existe, contada pelo scroll. O apa
 - **Modelo próprio, gerado por código.**
   - `blender/orbe-one.py` monta o aparelho com medidas reais (71 × 149 × 7,9 mm): perfil arredondado com chanfros, módulo de câmera circular com lentes em camadas, botões, porta USB-C, alto-falante e camadas internas.
   - Exporta um GLB de 444 KB, com materiais PBR e clearcoat.
-- **Reflexos de verdade.** A luz vem de um HDRI de estúdio CC0 (Poly Haven, `studio_small_09`), reduzido para 512×256 por `scripts/downsample-hdr.mjs`, com tone mapping PBR Neutral. A tela, o rótulo da bateria e as trilhas da placa são desenhados em canvas.
+- **Reflexos de verdade.** A luz vem de um HDRI de estúdio CC0 (Poly Haven, `studio_small_09`), reduzido para 512×256 por `scripts/downsample-hdr.mjs` e convertido em ambiente PMREM uma única vez por `npm run bake:env`, com tone mapping PBR Neutral. A tela, o rótulo da bateria e as trilhas da placa são desenhados em canvas.
 - **7 cenas ligadas ao scroll.** A pose de cada cena é uma função pura (`poseAt`, `sceneAt`, `stopsFor`), testada em unidade. Um ScrollTrigger aplica a pose, e o Lenis suaviza.
 - **Direção editorial** (`docs/DESIGN.md`).
   - O nome "ORBE ONE" gigante fica atrás do aparelho.
@@ -29,14 +29,17 @@ Lighthouse 13.6, no preview local:
 
 | Perfil | Performance | Acessibilidade | Boas práticas | SEO | LCP | TBT | CLS |
 |---|---|---|---|---|---|---|---|
-| Mobile | 99 | 100 | 100 | 100 | 1,8 s | 80 ms | 0,001 |
-| Desktop | 80 | 100 | 100 | 100 | 0,2 s | 470 ms | 0,005 |
+| Mobile | 99–100 | 100 | 100 | 100 | 1,9 s | 21 ms | 0 |
+| Desktop | 100 | 100 | 100 | 100 | 0,2 s | 19 ms | 0,005 |
 
-Com `npm run measure` (GPU real, desktop e celular com CPU 4×), não há nenhuma tarefa longa durante o scroll e a página roda a 58–60 fps. O TBT do desktop vem da geração do ambiente (PMREM) antes de o 3D aparecer; o próximo passo é pré-calcular esse ambiente no build.
+No desktop, com o Chrome recém-aberto (GPU e cache de shaders frios), a nota fica entre 84 e 100: o que sobra é o processo da GPU subindo ao criar o contexto WebGL. Antes do ambiente pré-calculado, nas mesmas condições, ficava em 69–75 (TBT ~1 s).
+
+Com `npm run measure` (GPU real, desktop e celular com CPU 4×), não há nenhuma tarefa longa durante o scroll e a página roda a 58–60 fps. No desktop, o 3D fica pronto em ~1 s (antes 2,6 s).
 
 ## Decisões que valeram a pena
 
-- **Ambiente gerado antes de compilar.** Ligar o HDRI depois que o 3D aparecia obrigava todos os materiais a recompilar no meio do scroll (~1,2 s de travadas). Agora modelo e HDRI baixam juntos, o ambiente é gerado antes e os shaders compilam em paralelo (`compileAsync`).
+- **Ambiente pré-calculado.** O `PMREMGenerator` compilava seus shaders de forma síncrona no navegador (~0,9 s de página travada no desktop). Agora `scripts/bake-environment.mjs` gera o cubemap com os 6 níveis de desfoque num Chromium e grava um `.hdr` (320 KB com gzip, o mesmo que o HDRI); o site o carrega direto como textura PMREM, sem shader extra. Os níveis ficam com metade do lado: o shader escolhe o nível pela rugosidade, não pelo tamanho, e o HDRI de 512 px não tem detalhe para mais que isso.
+- **Nada é desenhado antes de os shaders compilarem.** Um render no meio do `compileAsync` usava programas ainda incompletos e travava a página esperando por eles (~0,5 s com a GPU fria). O ambiente entra antes da compilação, então nada recompila depois, no meio do scroll.
 - **Grão em PNG, não em filtro SVG.** O `feTurbulence` em tela cheia, somado a um `mix-blend-mode` no cabeçalho, repintava a página e custava ~850 ms de TBT no mobile.
 - **Nada de criar contexto WebGL "só para testar".** A checagem de suporte acordava o processo da GPU. Agora a checagem é pela API, e se o contexto real falhar a página cai nos pôsteres.
 - **Estado observável para os testes.** A página publica `data-scene`, `data-layout`, `data-color` e `data-environment` no DOM, e os testes leem isso em vez de comparar pixels do canvas.
@@ -52,10 +55,11 @@ npm install
 npm run dev          # http://localhost:4321/vitrine-celular/
 npm run build        # gera dist/
 npm run check        # astro check
-npx playwright test  # 86 testes: unidade, E2E desktop/mobile, acessibilidade
+npx playwright test  # 93 testes: unidade, E2E desktop/mobile, acessibilidade
 npm run posters      # regenera os pôsteres a partir do 3D
 npm run gif          # regenera docs/demo.gif
 npm run measure      # LCP, CLS, tarefas longas e FPS (com o preview na porta 4331)
+npm run bake:env     # pré-calcula o ambiente (rode de novo ao trocar o HDRI ou atualizar o three)
 blender -b -P blender/orbe-one.py -- --out public/models/orbe-one.glb   # regenera o modelo
 ```
 
@@ -65,4 +69,4 @@ O deploy no GitHub Pages roda a cada push na `main` (`.github/workflows/deploy.y
 
 ---
 
-**EN:** A scroll-driven launch page for a fictional phone, modeled by script in Blender and rendered with Three.js under a CC0 studio HDRI, with an editorial art direction. It falls back to static posters without WebGL, JavaScript or with reduced motion, and scores 99 on Lighthouse mobile performance. Portfolio project by Marcelo Filho.
+**EN:** A scroll-driven launch page for a fictional phone, modeled by script in Blender and rendered with Three.js under a CC0 studio HDRI, with an editorial art direction. It falls back to static posters without WebGL, JavaScript or with reduced motion, and scores 99–100 on Lighthouse performance, mobile and desktop. Portfolio project by Marcelo Filho.
