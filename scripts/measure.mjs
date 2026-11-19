@@ -39,6 +39,7 @@ for (const profile of profiles) {
 
   const start = Date.now();
   await page.goto(URL);
+  await page.evaluate(() => window.dispatchEvent(new Event("pointerdown"))); // em toque, o 3D liga no 1º gesto
   await page.waitForFunction(() => document.documentElement.dataset.stage === "ready", null, { timeout: 60_000 });
   const readyMs = Date.now() - start;
   const gpu = await page.evaluate(() => {

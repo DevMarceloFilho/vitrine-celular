@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { ready3D } from "./helpers";
 
 /** Arquivos JS baixados antes do evento load, com o tamanho do corpo em bytes. */
 const scriptsBeforeLoad = (page: Page) =>
@@ -24,12 +25,13 @@ test.describe("com movimento liberado", () => {
   test("o palco 3D fica pronto e o canvas aparece", async ({ page }) => {
     await page.goto("./");
 
-    await expect(page.locator("html")).toHaveAttribute("data-stage", "ready");
+    await ready3D(page);
     await expect(page.locator("canvas[data-stage]")).toBeVisible();
   });
 
   test("o enquadramento acompanha a largura da tela", async ({ page }) => {
     await page.goto("./");
+    await ready3D(page);
     const expected = page.viewportSize()!.width >= 1024 ? "desktop" : "mobile";
 
     await expect(page.locator("html")).toHaveAttribute("data-layout", expected);
@@ -37,7 +39,7 @@ test.describe("com movimento liberado", () => {
 
   test("nenhum JS grande é baixado antes do load", async ({ page }) => {
     await page.goto("./");
-    await expect(page.locator("html")).toHaveAttribute("data-stage", "ready");
+    await ready3D(page);
 
     const early = await scriptsBeforeLoad(page);
 
@@ -61,10 +63,23 @@ test.describe("com movimento reduzido", () => {
 test.describe("recursos do 3D", () => {
   test("o dispose libera todas as geometrias e texturas", async ({ page }) => {
     await page.goto("./");
-    await expect(page.locator("html")).toHaveAttribute("data-stage", "ready");
+    await ready3D(page);
 
     const memory = await page.evaluate(() => (window as unknown as { __orbe: { dispose(): unknown } }).__orbe.dispose());
 
     expect(memory).toEqual({ geometries: 0, textures: 0 });
+  });
+});
+
+test.describe("em tela de toque", () => {
+  test("o 3D só liga no primeiro gesto", async ({ page }) => {
+    test.skip(!(await page.evaluate(() => matchMedia("(pointer: coarse)").matches)), "regra de telas de toque");
+    await page.goto("./");
+    await page.waitForLoadState("networkidle");
+
+    await expect(page.locator("html")).not.toHaveAttribute("data-stage", "ready");
+    expect(await scriptBytes(page)).toBeLessThan(20_000);
+
+    await ready3D(page);
   });
 });

@@ -41,5 +41,23 @@ async function start(): Promise<void> {
   }
 }
 
-if (document.readyState === "complete") void start();
-else window.addEventListener("load", () => void start(), { once: true });
+/**
+ * Telas de toque: o 3D liga no primeiro toque ou scroll. Até lá fica o pôster da abertura (mesma pose),
+ * e o scroll por toque é composto fora da thread principal, então segue liso enquanto o 3D monta.
+ * Quem abre e sai não gasta bateria nem dados com WebGL. Com mouse, o 3D carrega sozinho após o load.
+ */
+function scheduleStart(): void {
+  if (!matchMedia("(pointer: coarse)").matches) {
+    void start();
+    return;
+  }
+  const events = ["pointerdown", "touchstart", "wheel", "keydown", "scroll"] as const;
+  const go = () => {
+    for (const name of events) window.removeEventListener(name, go);
+    void start();
+  };
+  for (const name of events) window.addEventListener(name, go, { passive: true, once: true });
+}
+
+if (document.readyState === "complete") scheduleStart();
+else window.addEventListener("load", scheduleStart, { once: true });

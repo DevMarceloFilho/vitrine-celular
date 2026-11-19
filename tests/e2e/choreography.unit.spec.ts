@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { idleSway, keyframes, poseAt, sceneAt, stopsFor, type Pose } from "../../src/three/choreography";
 
 const STOPS = [0, 800, 1600, 2400, 3200, 4000, 4800];
-const FIELDS: (keyof Pose)[] = ["rotationX", "rotationY", "positionY", "cameraZ", "explode"];
+const FIELDS: (keyof Pose)[] = ["rotationX", "rotationY", "positionY", "cameraZ", "explode", "offsetX"];
 
 test("antes do topo, a pose é a da abertura", () => {
   expect(poseAt(-500, STOPS)).toEqual(keyframes.intro);

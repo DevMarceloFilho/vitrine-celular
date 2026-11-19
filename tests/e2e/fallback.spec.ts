@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { ready3D } from "./helpers";
 
 const SCENES = ["intro", "design", "camera", "inside", "colors", "specs", "end"];
 
@@ -53,7 +54,7 @@ test.describe("sem JavaScript", () => {
 test.describe("com 3D", () => {
   test("os pôsteres somem quando o palco 3D fica pronto", async ({ page }) => {
     await page.goto("./");
-    await expect(page.locator("html")).toHaveAttribute("data-stage", "ready");
+    await ready3D(page);
 
     await expect(page.locator("img[data-poster]:visible")).toHaveCount(0);
   });

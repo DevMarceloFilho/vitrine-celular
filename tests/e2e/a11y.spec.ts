@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { test, expect, type Page } from "@playwright/test";
+import { ready3D } from "./helpers";
 
 const seriousViolations = async (page: Page) => {
   const results = await new AxeBuilder({ page }).analyze();
@@ -11,7 +12,7 @@ const seriousViolations = async (page: Page) => {
 for (const path of ["./", "en/"]) {
   test(`axe sem violação séria ou crítica em ${path} com 3D`, async ({ page }) => {
     await page.goto(path);
-    await expect(page.locator("html")).toHaveAttribute("data-stage", "ready");
+    await ready3D(page);
 
     expect(await seriousViolations(page)).toEqual([]);
   });

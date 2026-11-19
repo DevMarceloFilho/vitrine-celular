@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { ready3D } from "./helpers";
 
 const scrollToScene = (page: Page, id: string) =>
   page.evaluate((sceneId) => {
@@ -9,7 +10,7 @@ const scrollToScene = (page: Page, id: string) =>
 
 test("rolar até 'Por dentro' marca a cena inside, e voltar ao topo marca intro", async ({ page }) => {
   await page.goto("./");
-  await expect(page.locator("html")).toHaveAttribute("data-stage", "ready");
+  await ready3D(page);
   await expect(page.locator("body")).toHaveAttribute("data-scene", "intro");
 
   await scrollToScene(page, "inside");
@@ -21,16 +22,54 @@ test("rolar até 'Por dentro' marca a cena inside, e voltar ao topo marca intro"
 
 test("a última cena é marcada no fim da página", async ({ page }) => {
   await page.goto("./");
-  await expect(page.locator("html")).toHaveAttribute("data-stage", "ready");
+  await ready3D(page);
 
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
 
   await expect(page.locator("body")).toHaveAttribute("data-scene", "end");
 });
 
-test("na cena 'Por dentro', os 4 rótulos aparecem sem se sobrepor", async ({ page }) => {
+test("no celular, os rótulos flutuantes ficam escondidos (vale a lista do texto)", async ({ page }) => {
+  test.skip(page.viewportSize()!.width >= 1024, "regra do celular");
   await page.goto("./");
-  await expect(page.locator("html")).toHaveAttribute("data-stage", "ready");
+  await ready3D(page);
+
+  await scrollToScene(page, "inside");
+
+  await expect(page.locator("[data-labels]")).toBeHidden();
+});
+
+test("com a cena centralizada, o título dela já está revelado", async ({ page }) => {
+  await page.goto("./");
+  await ready3D(page);
+
+  // O SplitText põe cada linha dentro de uma máscara: escondida, a linha fica abaixo da máscara.
+  const hiddenLines = (id: string) =>
+    page.locator(`#${id}-title`).evaluate((h) =>
+      [...h.querySelectorAll(":scope > div > div")].filter((line) => {
+        const mask = line.parentElement!.getBoundingClientRect();
+        return Math.abs(line.getBoundingClientRect().top - mask.top) > 2;
+      }).length,
+    );
+
+  for (const id of ["design", "colors", "end"]) {
+    await scrollToScene(page, id);
+    await expect(page.locator(`#${id}-title`)).toBeInViewport({ ratio: 0.9 });
+    await expect.poll(() => hiddenLines(id), { timeout: 5000 }).toBe(0);
+  }
+});
+
+test("a página não rola na horizontal em nenhuma cena", async ({ page }) => {
+  await page.goto("./");
+  await ready3D(page);
+
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
+});
+
+test("na cena 'Por dentro', os 4 rótulos aparecem sem se sobrepor", async ({ page }) => {
+  test.skip(page.viewportSize()!.width < 1024, "no celular os rótulos ficam escondidos");
+  await page.goto("./");
+  await ready3D(page);
 
   await scrollToScene(page, "inside");
   const labels = page.locator("[data-label]");
