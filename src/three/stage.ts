@@ -1,15 +1,19 @@
 import {
-  ACESFilmicToneMapping,
   DirectionalLight,
+  EquirectangularReflectionMapping,
   HemisphereLight,
   type Material,
   Mesh,
+  NeutralToneMapping,
   PerspectiveCamera,
+  PMREMGenerator,
   Scene,
   SRGBColorSpace,
   Texture,
   WebGLRenderer,
+  type WebGLRenderTarget,
 } from "three";
+import { HDRLoader } from "three/addons/loaders/HDRLoader.js";
 
 export interface Stage {
   scene: Scene;
@@ -20,11 +24,13 @@ export interface Stage {
   onRender(callback: () => void): void;
   /** Render síncrono (usado para capturar os pôsteres). */
   renderNow(): void;
-  /**
-   * Luzes da cena. Luzes diretas em vez de ambiente PMREM: o PMREM compilava shaders de forma
-   * síncrona e travava a página por ~600 ms; estas compilam em paralelo com o resto no `compile()`.
-   */
+  /** Luzes diretas: deixam o aparelho bonito já no primeiro frame, antes do HDRI chegar. */
   buildLighting(): void;
+  /**
+   * Reflexos reais: carrega o HDRI de estúdio e gera o ambiente (PMREM). O PMREM compila shaders
+   * de forma síncrona (~0,2–0,6 s): a página chama isto antes de compilar, com o pôster ainda na tela.
+   */
+  loadEnvironment(url: string): Promise<void>;
   /** Compila os shaders da cena em paralelo, sem travar a página (KHR_parallel_shader_compile). */
   compile(): Promise<void>;
   /** Libera tudo e devolve o que ainda restou na GPU (deve ser zero). */
@@ -37,20 +43,38 @@ const MAX_PIXEL_RATIO_MOBILE = 1.5;
 export function createStage(canvas: HTMLCanvasElement): Stage {
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
   renderer.outputColorSpace = SRGBColorSpace;
-  renderer.toneMapping = ACESFilmicToneMapping;
+  // Tone mapping "neutro" (Khronos PBR Neutral): mantém as cores do produto fiéis, como foto de estúdio.
+  renderer.toneMapping = NeutralToneMapping;
+  renderer.toneMappingExposure = 1;
 
   const scene = new Scene();
-  let lit = false;
+  const lights: (DirectionalLight | HemisphereLight)[] = [];
   const buildLighting = () => {
-    if (lit) return;
-    lit = true;
-    const key = new DirectionalLight("#ffffff", 3.2);
-    key.position.set(3, 4, 6);
-    const rim = new DirectionalLight("#9b8cff", 3); // contraluz violeta da marca
-    rim.position.set(-5, 3, -4);
-    const fill = new DirectionalLight("#ffffff", 1.2);
+    if (lights.length) return;
+    const key = new DirectionalLight("#fff6ec", 2.4);
+    key.position.set(4, 5, 6);
+    const rim = new DirectionalLight("#dfe7ff", 2.2);
+    rim.position.set(-6, 3, -4);
+    const fill = new DirectionalLight("#ffffff", 0.8);
     fill.position.set(-4, -2, 5);
-    scene.add(new HemisphereLight("#e6e4ff", "#2a2a33", 2.2), key, rim, fill);
+    lights.push(new HemisphereLight("#f4f2ee", "#3a3936", 1.6), key, rim, fill);
+    scene.add(...lights);
+  };
+
+  let envTarget: WebGLRenderTarget | null = null;
+  const loadEnvironment = async (url: string) => {
+    if (envTarget) return;
+    const equirect = await new HDRLoader().loadAsync(url);
+    equirect.mapping = EquirectangularReflectionMapping;
+    const pmrem = new PMREMGenerator(renderer);
+    envTarget = pmrem.fromEquirectangular(equirect);
+    equirect.dispose();
+    pmrem.dispose();
+    scene.environment = envTarget.texture;
+    scene.environmentIntensity = 1.1;
+    // Com reflexos reais, as luzes diretas viram só realce.
+    for (const light of lights) light.intensity *= 0.35;
+    requestRender();
   };
 
   const camera = new PerspectiveCamera(30, 1, 0.1, 100);
@@ -92,6 +116,7 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
       render();
     },
     buildLighting,
+    loadEnvironment,
     compile: async () => {
       await renderer.compileAsync(scene, camera);
     },
@@ -103,7 +128,7 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
         object.geometry.dispose();
         const materials: Material[] = Array.isArray(object.material) ? object.material : [object.material];
         for (const material of materials) {
-          // O material não libera as próprias texturas (ex.: a CanvasTexture da tela).
+          // O material não libera as próprias texturas (ex.: as CanvasTextures da tela, bateria e placa).
           for (const key in material) {
             const value = (material as unknown as Record<string, unknown>)[key];
             if (value instanceof Texture) value.dispose();
@@ -111,6 +136,7 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
           material.dispose();
         }
       });
+      envTarget?.dispose();
       renderer.dispose();
       const { geometries, textures } = renderer.info.memory;
       return { geometries, textures };
