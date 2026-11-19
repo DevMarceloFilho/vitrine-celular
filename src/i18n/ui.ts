@@ -30,7 +30,7 @@ export const defaultColor: ColorId = "graphite";
 
 /** Cores de cada acabamento: estrutura metálica e traseira de vidro fosco. */
 export const colorways: Record<ColorId, { frame: string; back: string }> = {
-  graphite: { frame: "#3a3b40", back: "#2b2c30" },
+  graphite: { frame: "#56575c", back: "#3e3f44" },
   sand: { frame: "#b9a68a", back: "#d2c4ac" },
   mist: { frame: "#8c9fb2", back: "#aebdcb" },
 };
@@ -51,7 +51,11 @@ interface SceneCopy {
 
 interface Copy {
   meta: { title: string; description: string };
+  /** Linha técnica acima do nome e metadados no pé da abertura. */
+  hero: { kicker: string; meta: string[] };
   scenes: Record<SceneId, SceneCopy>;
+  /** Links do fim da página. */
+  links: { label: string; href: string }[];
   layers: string[];
   /** Rótulos curtos que flutuam sobre cada camada no 3D. */
   labels: Record<LayerId, string>;
@@ -67,6 +71,11 @@ export const copy: Record<Lang, Copy> = {
       title: "Orbe One · Vitrine (projeto fictício)",
       description: "Página de lançamento de um celular fictício em 3D, feita com Three.js e GSAP por Marcelo Filho.",
     },
+    hero: { kicker: "Celular conceito — 2026", meta: ["Projeto fictício", "Portfólio de Marcelo Filho", "Role para explorar"] },
+    links: [
+      { label: "Código no GitHub", href: "https://github.com/DevMarceloFilho/vitrine-celular" },
+      { label: "Mais projetos de Marcelo Filho", href: "https://github.com/DevMarceloFilho" },
+    ],
     scenes: {
       intro: { eyebrow: "Novo", title: "Orbe One", body: "Leve na mão. Pesado no que importa." },
       design: {
@@ -114,6 +123,11 @@ export const copy: Record<Lang, Copy> = {
       title: "Orbe One · Showcase (fictional product)",
       description: "Launch page for a fictional 3D phone, built with Three.js and GSAP by Marcelo Filho.",
     },
+    hero: { kicker: "Concept phone — 2026", meta: ["Fictional product", "Portfolio of Marcelo Filho", "Scroll to explore"] },
+    links: [
+      { label: "Code on GitHub", href: "https://github.com/DevMarceloFilho/vitrine-celular" },
+      { label: "More projects by Marcelo Filho", href: "https://github.com/DevMarceloFilho" },
+    ],
     scenes: {
       intro: { eyebrow: "New", title: "Orbe One", body: "Light in the hand. Heavy where it counts." },
       design: {

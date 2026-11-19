@@ -18,60 +18,101 @@ const postersFor = (id: SceneId) =>
   id === "colors"
     ? colorIds.map((color) => ({ image: poster(`colors-${color}`), color }))
     : [{ image: poster(id), color: undefined }];
+const number = (i: number) => String(i + 1).padStart(2, "0");
 ---
 
 <Base title={text.meta.title} description={text.meta.description}>
   <main>
     {
-      sceneIds.map((id) => {
+      sceneIds.map((id, i) => {
         const scene = text.scenes[id];
-        const Heading = id === "intro" ? "h1" : "h2";
         return (
-          <section class={`scene scene--${id}`} id={id} data-scene-id={id} aria-labelledby={`${id}-title`}>
-            <div class="copy">
-              <p class="eyebrow">{scene.eyebrow}</p>
-              <Heading id={`${id}-title`}>{scene.title}</Heading>
-              <p class="body">{scene.body}</p>
-
-              {id === "inside" && (
-                <ol class="layers">
-                  {text.layers.map((layer) => (
-                    <li>{layer}</li>
-                  ))}
-                </ol>
-              )}
-
-              {id === "colors" && (
-                <div class="colors" role="group" aria-label={text.colorsLabel}>
-                  {colorIds.map((color) => (
-                    <button
-                      type="button"
-                      class="color"
-                      data-color-option={color}
-                      aria-pressed={color === defaultColor ? "true" : "false"}
-                      style={`--swatch: ${colorways[color].frame}`}
-                    >
-                      <span class="swatch" aria-hidden="true" />
-                      {text.colors[color]}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {id === "specs" && (
-                <table class="specs">
-                  <caption>{text.specs.caption}</caption>
-                  <tbody>
-                    {text.specs.rows.map(([label, value]) => (
-                      <tr>
-                        <th scope="row">{label}</th>
-                        <td>{value}</td>
-                      </tr>
+          <section
+            class={`scene scene--${id}`}
+            id={id}
+            data-scene-id={id}
+            data-scene-label={`${number(i)} / ${scene.eyebrow}`}
+            aria-labelledby={`${id}-title`}
+          >
+            {id === "intro" ? (
+              <div class="hero">
+                <p class="hero-kicker mono">{text.hero.kicker}</p>
+                <h1 id="intro-title" class="hero-title">
+                  {scene.title}
+                </h1>
+                <div class="hero-foot">
+                  <p class="hero-tagline">{scene.body}</p>
+                  <ul class="hero-meta mono">
+                    {text.hero.meta.map((item) => (
+                      <li>{item}</li>
                     ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
+                  </ul>
+                </div>
+              </div>
+            ) : (
+              <div class="copy">
+                <p class="index mono">
+                  <span>{number(i)}</span> / {scene.eyebrow}
+                </p>
+                <h2 id={`${id}-title`} data-reveal>
+                  {scene.title}
+                </h2>
+                <p class="body">{scene.body}</p>
+
+                {id === "inside" && (
+                  <ol class="layers">
+                    {text.layers.map((layer) => (
+                      <li>{layer}</li>
+                    ))}
+                  </ol>
+                )}
+
+                {id === "colors" && (
+                  <div class="colors" role="group" aria-label={text.colorsLabel}>
+                    {colorIds.map((color) => (
+                      <button
+                        type="button"
+                        class="color"
+                        data-color-option={color}
+                        aria-pressed={color === defaultColor ? "true" : "false"}
+                        style={`--swatch: ${colorways[color].frame}`}
+                      >
+                        <span class="swatch" aria-hidden="true" />
+                        {text.colors[color]}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {id === "specs" && (
+                  <table class="specs">
+                    <caption class="mono">{text.specs.caption}</caption>
+                    <tbody>
+                      {text.specs.rows.map(([label, value]) => (
+                        <tr>
+                          <th scope="row" class="mono">
+                            {label}
+                          </th>
+                          <td>{value}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+
+                {id === "end" && (
+                  <ul class="links">
+                    {text.links.map((link) => (
+                      <li>
+                        <a href={link.href} rel="noopener">
+                          {link.label} <span aria-hidden="true">↗</span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
 
             <div class="poster-slot">
               {postersFor(id).map(
@@ -101,17 +142,243 @@ const postersFor = (id: SceneId) =>
 
 <style>
   .scene {
+    position: relative;
     min-height: 100svh;
     display: grid;
     align-items: end;
-    padding: var(--space-l) var(--gutter);
+    padding: var(--space-xl) var(--gutter) var(--space-l);
   }
 
+  @media (min-width: 1024px) {
+    .scene {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      align-items: center;
+    }
+  }
+
+  /* Sem 3D, as cenas escuras ganham o próprio fundo (com 3D, quem muda é o body). */
+  :global(html:not([data-stage="ready"])) .scene--camera,
+  :global(html:not([data-stage="ready"])) .scene--inside {
+    --bg: var(--night);
+    --text: var(--paper);
+    --muted: #9c9993;
+    --line: rgb(242 240 235 / 0.16);
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  /* ---- Abertura ------------------------------------------------------------------------- */
+  .scene--intro {
+    display: block;
+    padding: 0;
+  }
+
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: 5.5rem var(--gutter) var(--space-m);
+    overflow: clip;
+  }
+
+  .hero-kicker {
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .hero-title {
+    align-self: center;
+    justify-self: center;
+    font-size: var(--step-hero);
+    font-weight: 700;
+    letter-spacing: -0.055em;
+    line-height: 0.8;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .hero-foot {
+    display: grid;
+    gap: var(--space-s);
+    align-items: end;
+  }
+
+  @media (min-width: 1024px) {
+    .hero-foot {
+      grid-template-columns: 1fr auto;
+    }
+  }
+
+  .hero-tagline {
+    font-size: var(--step-1);
+    max-width: 22ch;
+    margin: 0;
+    line-height: 1.25;
+  }
+
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--muted);
+  }
+
+  /* O pôster da abertura (sem 3D) fica na frente do nome, como o aparelho 3D. */
+  .scene--intro .poster-slot {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+  }
+
+  .scene--intro .poster-slot :global(.poster) {
+    max-width: min(24rem, 60vw);
+  }
+
+  /* ---- Cenas ------------------------------------------------------------------------------ */
   .copy {
-    max-width: 34rem;
+    max-width: 32rem;
   }
 
-  /* Pôsteres: aparecem sem 3D (sem WebGL, sem JS ou com movimento reduzido) e somem quando ele monta. */
+  .index {
+    color: var(--muted);
+    margin: 0 0 var(--space-m);
+  }
+
+  .index span {
+    color: var(--text);
+  }
+
+  h2 {
+    font-size: var(--step-2);
+  }
+
+  .body {
+    color: var(--muted);
+    font-size: var(--step-1);
+    line-height: 1.35;
+    margin: var(--space-m) 0 0;
+    max-width: 30ch;
+  }
+
+  .layers {
+    counter-reset: layer;
+    margin: var(--space-m) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .layers li {
+    counter-increment: layer;
+    border-top: 1px solid var(--line);
+    padding: 0.7rem 0;
+  }
+
+  .layers li::before {
+    content: counter(layer, decimal-leading-zero);
+    display: inline-block;
+    width: 3ch;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+  }
+
+  .colors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: var(--space-m);
+  }
+
+  .color {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 48px;
+    padding: 0.4rem 1.1rem 0.4rem 0.45rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    cursor: pointer;
+    transition: border-color 0.3s var(--ease);
+  }
+
+  .color:hover {
+    border-color: var(--text);
+  }
+
+  .color[aria-pressed="true"] {
+    border-color: var(--accent);
+    box-shadow: inset 0 0 0 1px var(--accent);
+  }
+
+  .swatch {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background: var(--swatch);
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.12);
+  }
+
+  .specs {
+    width: 100%;
+    margin-top: var(--space-m);
+    border-collapse: collapse;
+  }
+
+  .specs caption {
+    color: var(--muted);
+    text-align: left;
+    padding-bottom: 0.75rem;
+  }
+
+  .specs th,
+  .specs td {
+    border-top: 1px solid var(--line);
+    padding: 0.85rem 0;
+    text-align: left;
+    vertical-align: baseline;
+  }
+
+  .specs th {
+    color: var(--muted);
+    font-weight: 400;
+    padding-right: var(--space-s);
+    width: 42%;
+  }
+
+  .specs td {
+    font-size: var(--step-1);
+    letter-spacing: -0.01em;
+  }
+
+  .links {
+    margin: var(--space-m) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .links a {
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid var(--line);
+    padding: 1rem 0;
+    font-size: var(--step-1);
+    text-decoration: none;
+  }
+
+  .links a:hover {
+    color: var(--accent);
+  }
+
+  /* ---- Pôsteres (sem WebGL, sem JS ou com movimento reduzido) ------------------------------ */
   .poster-slot {
     display: grid;
     justify-items: center;
@@ -139,143 +406,21 @@ const postersFor = (id: SceneId) =>
     display: none;
   }
 
+  /* ---- Celular ---------------------------------------------------------------------------- */
   @media (max-width: 1023.98px) {
-    .poster-slot {
+    .scene:not(.scene--intro) .poster-slot {
       order: -1;
     }
 
     .poster-slot :global(.poster) {
       max-width: 18rem;
     }
-  }
 
-  /* No celular o texto fica sobre o aparelho: um degradê do fundo garante a leitura. */
-  @media (max-width: 1023.98px) {
+    /* O texto fica sobre o aparelho: um degradê da cor do fundo garante a leitura. */
     .copy {
       margin-inline: calc(var(--gutter) * -1);
       padding: var(--space-l) var(--gutter) 0;
-      background: linear-gradient(to top, var(--bg) 70%, transparent);
+      background: linear-gradient(to top, var(--bg) 72%, transparent);
     }
-  }
-
-  @media (min-width: 1024px) {
-    .scene {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      align-items: center;
-    }
-  }
-
-  .scene--intro {
-    align-items: center;
-  }
-
-  .scene--intro h1 {
-    font-size: var(--step-3);
-    font-weight: 800;
-  }
-
-  h2 {
-    font-size: var(--step-2);
-    font-weight: 700;
-  }
-
-  .eyebrow {
-    color: var(--accent);
-    font-size: 0.875rem;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    margin: 0 0 var(--space-s);
-    text-transform: uppercase;
-  }
-
-  .body {
-    color: var(--muted);
-    font-size: var(--step-1);
-    line-height: 1.4;
-    margin: var(--space-s) 0 0;
-  }
-
-  .layers {
-    margin: var(--space-m) 0 0;
-    padding: 0;
-    list-style: none;
-    display: grid;
-    gap: 0.5rem;
-  }
-
-  .layers {
-    counter-reset: layer;
-  }
-
-  .layers li {
-    counter-increment: layer;
-    border-top: 1px solid var(--line);
-    padding-top: 0.5rem;
-  }
-
-  .layers li::before {
-    content: counter(layer, decimal-leading-zero) "  ";
-    color: var(--accent);
-    font-variant-numeric: tabular-nums;
-  }
-
-  .colors {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: var(--space-m);
-  }
-
-  .color {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-height: 44px;
-    padding: 0.4rem 1rem 0.4rem 0.5rem;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    background: transparent;
-    color: var(--text);
-    font: inherit;
-    cursor: pointer;
-  }
-
-  .color[aria-pressed="true"] {
-    border-color: var(--accent);
-  }
-
-  .swatch {
-    width: 1.5rem;
-    height: 1.5rem;
-    border-radius: 50%;
-    background: var(--swatch);
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.15);
-  }
-
-  .specs {
-    width: 100%;
-    margin-top: var(--space-m);
-    border-collapse: collapse;
-  }
-
-  .specs caption {
-    color: var(--muted);
-    font-size: 0.875rem;
-    text-align: left;
-    padding-bottom: 0.5rem;
-  }
-
-  .specs th,
-  .specs td {
-    border-top: 1px solid var(--line);
-    padding: 0.6rem 0;
-    text-align: left;
-    vertical-align: top;
-  }
-
-  .specs th {
-    color: var(--muted);
-    font-weight: 500;
-    padding-right: var(--space-s);
   }
 </style>

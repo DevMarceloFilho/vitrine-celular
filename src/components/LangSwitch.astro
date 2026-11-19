@@ -10,20 +10,17 @@ const target: Lang = lang === "pt" ? "en" : "pt";
 const href = switchLangPath(Astro.url.pathname, target, import.meta.env.BASE_URL);
 ---
 
-<a class="lang-switch" href={href} hreflang={htmlLang[target]} lang={htmlLang[target]}>
+<a class="lang-switch mono" href={href} hreflang={htmlLang[target]} lang={htmlLang[target]}>
   {languages[target]}
 </a>
 
 <style>
   .lang-switch {
-    color: var(--muted);
-    font-size: 0.875rem;
-    letter-spacing: 0.04em;
     text-decoration: none;
-    text-transform: uppercase;
   }
 
   .lang-switch:hover {
-    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 0.3em;
   }
 </style>

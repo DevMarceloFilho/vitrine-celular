@@ -15,10 +15,17 @@ export default defineConfig({
   fonts: [
     {
       provider: fontProviders.fontsource(),
-      name: "Manrope",
+      name: "Inter Tight",
       cssVariable: "--font-sans",
-      weights: ["200 800"],
+      weights: ["300 800"],
       fallbacks: ["system-ui", "sans-serif"],
+    },
+    {
+      provider: fontProviders.fontsource(),
+      name: "JetBrains Mono",
+      cssVariable: "--font-mono",
+      weights: ["400 500"],
+      fallbacks: ["ui-monospace", "monospace"],
     },
   ],
 });

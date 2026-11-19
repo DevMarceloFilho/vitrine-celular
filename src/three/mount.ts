@@ -2,12 +2,16 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Color, Group } from "three";
 import { type ColorId, colorways, isColor, type SceneId } from "../i18n/ui";
+import { initReveals } from "../scripts/reveal";
 import { initSmoothScroll } from "../scripts/smooth-scroll";
 import { bindScroll } from "../scripts/timeline";
 import { idleSway, keyframes, type Pose } from "./choreography";
 import { createLabels } from "./labels";
-import { createPhone, type Phone } from "./phone";
+import { loadPhone, type Phone } from "./phone";
 import { createStage, type Stage } from "./stage";
+
+/** Caminho dos arquivos de `public/` dentro da base do site (`/vitrine-celular`). */
+const ASSETS = import.meta.env.BASE_URL.replace(/\/+$/, "");
 
 export interface PhoneStage {
   stage: Stage;
@@ -47,8 +51,14 @@ export async function mountPhoneStage(canvas: HTMLCanvasElement): Promise<PhoneS
   await nextFrame();
   stage.buildLighting();
   performance.mark("orbe:lighting");
-  await nextFrame();
-  const phone = createPhone();
+  // Modelo e HDRI baixam em paralelo. O ambiente (PMREM) é gerado ANTES de compilar: assim os
+  // shaders já nascem com reflexo e nada recompila depois, no meio do scroll (eram ~1,2 s de travadas).
+  const [phone] = await Promise.all([
+    loadPhone(`${ASSETS}/models/orbe-one.glb`),
+    stage.loadEnvironment(`${ASSETS}/env/studio_small_09_512.hdr`),
+  ]);
+  document.documentElement.dataset.environment = "ready";
+  performance.mark("orbe:environment");
 
   // O "rig" recebe pose e enquadramento; o aparelho guarda só a própria escala.
   const rig = new Group();
@@ -89,7 +99,7 @@ export async function mountPhoneStage(canvas: HTMLCanvasElement): Promise<PhoneS
 
   const apply = () => {
     rig.rotation.set(pose.rotationX, pose.rotationY + sway, 0);
-    rig.position.set(layout.x, layout.y + pose.positionY * layout.scale, 0);
+    rig.position.set(layout.x * pose.offsetX, layout.y + pose.positionY * layout.scale, 0);
     rig.scale.setScalar(layout.scale);
     phone.setExplode(pose.explode);
     // Os rótulos só aparecem perto da explosão completa (a partir de 60%).
@@ -107,12 +117,17 @@ export async function mountPhoneStage(canvas: HTMLCanvasElement): Promise<PhoneS
   });
 
   initSmoothScroll();
+  const sceneIndex = document.querySelector<HTMLElement>("[data-scene-index]");
   const scroll = bindScroll((nextPose, nextScene) => {
     pose = nextPose;
     scene = nextScene;
     apply();
-    if (document.body.dataset.scene !== scene) document.body.dataset.scene = scene;
+    if (document.body.dataset.scene === scene) return;
+    document.body.dataset.scene = scene;
+    // Índice editorial no cabeçalho ("03 / Câmera"); decorativo, o título da seção já diz isso.
+    if (sceneIndex) sceneIndex.textContent = document.getElementById(scene)?.dataset.sceneLabel ?? "";
   });
+  initReveals();
 
   // Balanço da abertura: o único momento com render contínuo, e só enquanto há balanço.
   gsap.ticker.add((time) => {

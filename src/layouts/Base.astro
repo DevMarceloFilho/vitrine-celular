@@ -46,7 +46,7 @@ const ogImage = introPoster ? new URL(introPoster.src, siteRoot).href : undefine
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#060607" />
+    <meta name="theme-color" content="#ebe8e3" />
     <link rel="canonical" href={canonical} />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
@@ -57,14 +57,16 @@ const ogImage = introPoster ? new URL(introPoster.src, siteRoot).href : undefine
     <link rel="icon" type="image/svg+xml" href={`${assetBase}/favicon.svg`} />
     {alternates.map((a) => <link rel="alternate" hreflang={a.hreflang} href={a.href} />)}
     <Font cssVariable="--font-sans" preload />
+    <Font cssVariable="--font-mono" />
   </head>
   <body>
     <canvas class="stage" data-stage aria-hidden="true"></canvas>
     <div class="labels" data-labels aria-hidden="true">
-      {layerIds.map((id) => <span class="label" data-label={id}>{copy[lang].labels[id]}</span>)}
+      {layerIds.map((id) => <span class="label mono" data-label={id}>{copy[lang].labels[id]}</span>)}
     </div>
     <header class="site-header">
       <a class="wordmark" href="#intro">Orbe</a>
+      <span class="scene-index mono" data-scene-index aria-hidden="true"></span>
       <LangSwitch lang={lang} />
     </header>
     <slot />
@@ -75,7 +77,7 @@ const ogImage = introPoster ? new URL(introPoster.src, siteRoot).href : undefine
 </html>
 
 <style is:global>
-  /* O canvas só aparece quando o 3D montou; sem ele, a página é só texto (e pôsteres na V7). */
+  /* O canvas só aparece quando o 3D montou; sem ele, a página é só texto e pôsteres. */
   .stage {
     position: fixed;
     inset: 0;
@@ -83,10 +85,16 @@ const ogImage = introPoster ? new URL(introPoster.src, siteRoot).href : undefine
     height: 100%;
     display: none;
     pointer-events: none;
+    z-index: 0;
   }
 
   html[data-stage="ready"] .stage {
     display: block;
+  }
+
+  /* Na abertura, o aparelho fica na frente do nome gigante (profundidade); depois, atrás do texto. */
+  body[data-scene="intro"] .stage {
+    z-index: 2;
   }
 
   /* Rótulos da vista explodida: posicionados pelo 3D, decorativos (a lista de camadas está no HTML). */
@@ -95,11 +103,16 @@ const ogImage = introPoster ? new URL(introPoster.src, siteRoot).href : undefine
     inset: 0;
     display: none;
     pointer-events: none;
-    z-index: 2;
+    z-index: 3;
   }
 
   html[data-stage="ready"] .labels {
     display: block;
+  }
+
+  /* No celular os rótulos flutuantes cairiam sobre o texto: lá vale a lista de camadas da cena. */
+  html[data-layout="mobile"] .labels {
+    display: none;
   }
 
   .label {
@@ -107,12 +120,10 @@ const ogImage = introPoster ? new URL(introPoster.src, siteRoot).href : undefine
     top: 0;
     left: 0;
     opacity: 0;
-    padding: 0.25rem 0.6rem;
+    padding: 0.3rem 0.6rem;
     border: 1px solid var(--line);
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--bg) 75%, transparent);
+    background: color-mix(in srgb, var(--bg) 70%, transparent);
     color: var(--text);
-    font-size: 0.8125rem;
     white-space: nowrap;
     will-change: transform, opacity;
   }
@@ -127,18 +138,37 @@ const ogImage = introPoster ? new URL(introPoster.src, siteRoot).href : undefine
   .site-header {
     position: fixed;
     inset: 0 0 auto;
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    justify-content: space-between;
-    padding: var(--space-s) var(--gutter);
+    padding: 1.25rem var(--gutter);
     z-index: 10;
+    /* Cor do tema (tinta no estúdio claro, papel nas cenas escuras), com a mesma transição do fundo. */
+    color: var(--text);
+    transition: color 0.8s var(--ease);
   }
 
   .wordmark {
-    color: var(--text);
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.14em;
     text-decoration: none;
     text-transform: uppercase;
+  }
+
+  .scene-index {
+    min-width: 12ch;
+    text-align: center;
+  }
+
+  @media (max-width: 599.98px) {
+    .scene-index {
+      visibility: hidden;
+      min-width: 0;
+    }
+  }
+
+  .site-header :global(.lang-switch) {
+    justify-self: end;
+    color: inherit;
   }
 </style>

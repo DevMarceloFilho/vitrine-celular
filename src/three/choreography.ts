@@ -7,18 +7,19 @@ export interface Pose {
   positionY: number; // unidades da cena
   cameraZ: number; // distância da câmera
   explode: number; // 0 = fechado, 1 = camadas separadas
+  offsetX: number; // 0 = centralizado; 1 = deslocado para a coluna do aparelho (desktop)
 }
 
 /** Pose de cada cena, no instante em que ela está centralizada na tela. */
 export const keyframes: Record<SceneId, Pose> = {
-  intro: { rotationX: 0.12, rotationY: -0.45, positionY: 0, cameraZ: 9, explode: 0 },
-  design: { rotationX: 0.05, rotationY: Math.PI - 0.3, positionY: 0, cameraZ: 8.5, explode: 0 },
-  camera: { rotationX: -0.1, rotationY: Math.PI + 0.25, positionY: -1, cameraZ: 5, explode: 0 },
+  intro: { rotationX: 0.12, rotationY: -0.45, positionY: 0, cameraZ: 9, explode: 0, offsetX: 0 },
+  design: { rotationX: 0.05, rotationY: Math.PI - 0.3, positionY: 0, cameraZ: 8.5, explode: 0, offsetX: 1 },
+  camera: { rotationX: -0.1, rotationY: Math.PI + 0.25, positionY: -1, cameraZ: 5, explode: 0, offsetX: 1 },
   // Quase de lado: o afastamento das camadas em Z vira um leque na horizontal.
-  inside: { rotationX: 0.3, rotationY: Math.PI * 2 - 1.15, positionY: 0, cameraZ: 10.5, explode: 1 },
-  colors: { rotationX: 0.1, rotationY: Math.PI * 2 - 0.35, positionY: 0, cameraZ: 8.5, explode: 0 },
-  specs: { rotationX: 0, rotationY: Math.PI * 1.5 + 0.15, positionY: 0, cameraZ: 9, explode: 0 },
-  end: { rotationX: 0.12, rotationY: Math.PI * 2 - 0.45, positionY: 0, cameraZ: 11, explode: 0 },
+  inside: { rotationX: 0.32, rotationY: Math.PI * 2 - 1.3, positionY: 0, cameraZ: 11, explode: 1, offsetX: 1 },
+  colors: { rotationX: 0.08, rotationY: Math.PI * 3 - 0.55, positionY: 0, cameraZ: 8.5, explode: 0, offsetX: 1 },
+  specs: { rotationX: 0.06, rotationY: Math.PI * 3.5 - 0.6, positionY: 0, cameraZ: 9, explode: 0, offsetX: 1 },
+  end: { rotationX: 0.12, rotationY: Math.PI * 4 - 0.45, positionY: 0, cameraZ: 11, explode: 0, offsetX: 1 },
 };
 
 const ordered = sceneIds.map((id) => keyframes[id]);
@@ -56,6 +57,7 @@ export function poseAt(scroll: number, stops: number[]): Pose {
     positionY: lerp(from.positionY, to.positionY, t),
     cameraZ: lerp(from.cameraZ, to.cameraZ, t),
     explode: lerp(from.explode, to.explode, t),
+    offsetX: lerp(from.offsetX, to.offsetX, t),
   };
 }
 
